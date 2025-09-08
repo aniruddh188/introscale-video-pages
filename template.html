@@ -476,27 +476,38 @@ document.addEventListener("DOMContentLoaded", () => {
         document.exitFullscreen();
       }
     });
-
-    const scrollToCalendar = () => {
+    
+    // Updated CTA Button Click Tracking
+    const scrollToCalendar = (eventSource) => {
+        // GA4 Event: Send book_call_click event
+        gtag('event', 'book_call_click', {
+            'prospect_name': '{{PROSPECT_NAME}}',
+            'event_source': eventSource // 'video_cta' or 'end_screen_cta'
+        });
       calendarSection.scrollIntoView({ behavior: 'smooth' });
     };
+
     videoCtaButton.addEventListener('click', (event) => {
       event.preventDefault();
       togglePlayPause();
       if (document.fullscreenElement) {
         const onFullscreenChange = () => {
           if (!document.fullscreenElement) {
-            scrollToCalendar();
+            scrollToCalendar('video_cta');
             document.removeEventListener('fullscreenchange', onFullscreenChange);
           }
         };
         document.addEventListener('fullscreenchange', onFullscreenChange);
         document.exitFullscreen();
       } else {
-        scrollToCalendar();
+        scrollToCalendar('video_cta');
       }
     });
-    endScreenCtaButton.addEventListener('click', scrollToCalendar);
+    
+    endScreenCtaButton.addEventListener('click', () => {
+        scrollToCalendar('end_screen_cta');
+    });
+
     replayButton.addEventListener('click', () => {
       videoEndScreen.style.display = 'none';
       faceVideo.currentTime = 0;
