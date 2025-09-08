@@ -52,6 +52,12 @@
       width: 100%;
       height: 100%;
     }
+    /* Performance tweaks for smoother playback */
+.screen-video-visual {
+  transform: translateZ(0); /* force GPU acceleration */
+  will-change: transform;   /* hint browser to optimize */
+}
+
 
     .thumbnail-overlay {
       position: absolute;
@@ -201,7 +207,7 @@
         <a href="#calendar-section" id="video-cta-button">Book a Call</a>
 
         <div class="video-player-container" id="myCustomPlayer">
-          <video class="screen-video-visual" id="screenVideo" playsinline muted preload="none" style="display:none;"></video>
+          <video class="screen-video-visual" id="screenVideo" playsinline muted preload="auto" style="display:none;"></video>
 
           <div class="face-video-wrapper" id="faceWrapper">
             <video class="face-video-visual" id="faceVideo" playsinline muted preload="none" style="display:none;"></video>
@@ -553,6 +559,7 @@ faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
   </script>
 </body>
 </html>
+
 
 
 
