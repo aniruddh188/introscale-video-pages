@@ -471,56 +471,52 @@
       faceWrapper.style.transform = '';
     }
 
-    function updateFaceOverlayPosition() {
-      // Only adjust in mobile + fullscreen
-      if (!isMobile() || !document.fullscreenElement) {
-        resetFaceOverlayPosition();
-        return;
-      }
+function updateFaceOverlayPosition() {
+  // Only adjust in mobile + fullscreen
+  if (!isMobile() || !document.fullscreenElement) {
+    resetFaceOverlayPosition();
+    return;
+  }
 
-      // Use screenVideo's intrinsic aspect for accurate letterboxing
-      const vw = screenVideo.videoWidth  || 1920; // fallback to 16:9
-      const vh = screenVideo.videoHeight || 1080;
-      const videoAspect = vw / vh;
+  const vw = screenVideo.videoWidth  || 1920; 
+  const vh = screenVideo.videoHeight || 1080;
+  const videoAspect = vw / vh;
 
-      const rect = playerContainer.getBoundingClientRect();
-      const cw = rect.width;
-      const ch = rect.height;
-      const containerAspect = cw / ch;
+  const rect = playerContainer.getBoundingClientRect();
+  const cw = rect.width;
+  const ch = rect.height;
+  const containerAspect = cw / ch;
 
-      // Compute content box size within the container (object-fit: contain)
-      let contentW, contentH, offsetX = 0, offsetY = 0;
-      if (containerAspect > videoAspect) {
-        // container wider: full height used, pillarbox left/right
-        contentH = ch;
-        contentW = ch * videoAspect;
-        offsetX = (cw - contentW) / 2;
-        offsetY = 0;
-      } else {
-        // container taller: full width used, letterbox top/bottom
-        contentW = cw;
-        contentH = cw / videoAspect;
-        offsetX = 0;
-        offsetY = (ch - contentH) / 2;
-      }
+  let contentW, contentH, offsetX = 0, offsetY = 0;
+  if (containerAspect > videoAspect) {
+    // full height used, pillarbox
+    contentH = ch;
+    contentW = ch * videoAspect;
+    offsetX = (cw - contentW) / 2;
+  } else {
+    // full width used, letterbox
+    contentW = cw;
+    contentH = cw / videoAspect;
+    offsetY = (ch - contentH) / 2;
+  }
 
-      // Position the circle *inside* the content box, bottom-right with some padding
-      const padX = contentW * 0.02; // 2% horizontal padding inside content
-      const padY = contentH * 0.05; // 5% vertical padding inside content
+  // Padding inside the content box
+  const padX = contentW * 0.02;
+  const padY = contentH * 0.05;
 
-      // Size the circle relative to content width (keeps proportions in both orientations)
-      const circleW = contentW * 0.20; // 20% of visible video width
+  const circleW = contentW * 0.20; // 20% of visible width
 
-      faceWrapper.style.left   = 'auto';
-      faceWrapper.style.top    = 'auto';
-      faceWrapper.style.width  = `${circleW}px`;
-      faceWrapper.style.height = 'auto';
+  // Place circle relative to content box
+  faceWrapper.style.width  = `${circleW}px`;
+  faceWrapper.style.height = `${circleW}px`; // force square
+  faceWrapper.style.left   = `${offsetX + contentW - circleW - padX}px`;
+  faceWrapper.style.top    = `${offsetY + contentH - circleW - padY}px`;
 
-      // Use right/bottom from the container edges, adding the letterbox offsets
-      faceWrapper.style.right  = `${offsetX + padX}px`;
-      faceWrapper.style.bottom = `${offsetY + padY}px`;
-      faceWrapper.style.transform = 'none';
-    }
+  faceWrapper.style.right  = 'auto';
+  faceWrapper.style.bottom = 'auto';
+  faceWrapper.style.transform = 'none';
+}
+
 
     // *** MODIFICATION START ***
     let resizeTimeout;
@@ -547,4 +543,5 @@ faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
   </script>
 </body>
 </html>
+
 
