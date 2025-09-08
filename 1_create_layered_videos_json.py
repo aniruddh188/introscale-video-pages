@@ -8,7 +8,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import WebDriverException
 
 # --- Configuration ---
-CSV_FILE_PATH = 'RepliQ results.csv'
+# --- FIX: Renamed CSV file to remove space ---
+CSV_FILE_PATH = 'RepliQ_results.csv'
 JSON_OUTPUT_PATH = 'videos.json' 
 
 def setup_driver():
@@ -32,7 +33,7 @@ def scrape_video_links(driver, url):
     """
     try:
         driver.get(url)
-        time.sleep(3) # A brief wait for the page's initial data to be stable
+        time.sleep(3) 
         
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         
@@ -65,9 +66,13 @@ def main():
         os.remove(JSON_OUTPUT_PATH)
     
     try:
-        df = pd.read_csv(CSV_FILE_PATH)
+        # Using the robust 'python' engine to handle commas in data
+        df = pd.read_csv(CSV_FILE_PATH, engine='python')
     except FileNotFoundError:
         print(f"Error: The file '{CSV_FILE_PATH}' was not found.")
+        return
+    except Exception as e:
+        print(f"An unexpected error occurred while reading the CSV: {e}")
         return
 
     print("\n--- Starting to Scrape Video Links for Netlify ---")
@@ -109,7 +114,6 @@ def main():
 
     print(f"\nSuccessfully created '{JSON_OUTPUT_PATH}' with {len(videos_data)} entries.")
 
-    # --- Update the original CSV with the final links ---
     print("\n--- Updating CSV with final introscale.com links ---")
     try:
         final_links = []
@@ -120,7 +124,7 @@ def main():
                 if video_id in videos_data:
                     final_links.append(f"https://video.introscale.com/{video_id}")
                 else:
-                    final_links.append("") # Leave blank if scraping failed
+                    final_links.append("")
             else:
                 final_links.append("")
 
