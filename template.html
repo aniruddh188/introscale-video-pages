@@ -9,6 +9,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LEFRD7K283"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LEFRD7K283');
+  </script>
   <style>
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; }
@@ -314,6 +323,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let controlsTimeout;
     let screenVideoHasEnded = false;
 
+    // GA4 Event Tracking: Track progress to prevent sending duplicate events
+    let progressMarkers = {
+      '25': false,
+      '50': false,
+      '75': false
+    };
+
     if (faceVideo.muted) playerWrapper.classList.add('muted');
 
     function formatTime(time) {
@@ -336,6 +352,13 @@ document.addEventListener("DOMContentLoaded", () => {
     thumbnailOverlay.addEventListener('click', () => {
       if (hasBeenStarted) return;
       hasBeenStarted = true;
+
+      // GA4 Event: Send video_start event
+      gtag('event', 'video_start', {
+        'video_title': '{{PROSPECT_NAME}}',
+        'video_url': faceVideo.src
+      });
+
       playerWrapper.classList.add('video-active');
       faceVideo.muted = false;
       playerWrapper.classList.remove('muted');
@@ -370,6 +393,34 @@ document.addEventListener("DOMContentLoaded", () => {
     faceVideo.addEventListener('timeupdate', () => {
       const currentTime = faceVideo.currentTime;
       const duration = faceVideo.duration;
+      const percentWatched = (currentTime / duration) * 100;
+
+      // GA4 Event: Track progress
+      if (percentWatched >= 25 && !progressMarkers['25']) {
+          progressMarkers['25'] = true;
+          gtag('event', 'video_progress', {
+              'video_title': '{{PROSPECT_NAME}}',
+              'video_url': faceVideo.src,
+              'video_percent': 25
+          });
+      }
+      if (percentWatched >= 50 && !progressMarkers['50']) {
+          progressMarkers['50'] = true;
+          gtag('event', 'video_progress', {
+              'video_title': '{{PROSPECT_NAME}}',
+              'video_url': faceVideo.src,
+              'video_percent': 50
+          });
+      }
+      if (percentWatched >= 75 && !progressMarkers['75']) {
+          progressMarkers['75'] = true;
+          gtag('event', 'video_progress', {
+              'video_title': '{{PROSPECT_NAME}}',
+              'video_url': faceVideo.src,
+              'video_percent': 75
+          });
+      }
+
 
       if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
         screenVideoHasEnded = true;
@@ -384,6 +435,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     faceVideo.addEventListener('ended', () => {
+      // GA4 Event: Send video_complete event
+      gtag('event', 'video_complete', {
+        'video_title': '{{PROSPECT_NAME}}',
+        'video_url': faceVideo.src
+      });
+
       calendarSection.scrollIntoView({ behavior: 'smooth' });
       playerWrapper.classList.remove('playing');
       playerWrapper.classList.add('paused');
@@ -445,6 +502,12 @@ document.addEventListener("DOMContentLoaded", () => {
       faceVideo.currentTime = 0;
       screenVideo.currentTime = 0;
       screenVideoHasEnded = false;
+      
+      // Reset progress markers for replayed video
+      progressMarkers['25'] = false;
+      progressMarkers['50'] = false;
+      progressMarkers['75'] = false;
+
       togglePlayPause();
     });
 
@@ -564,9 +627,3 @@ faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
   </script>
 </body>
 </html>
-
-
-
-
-
-
