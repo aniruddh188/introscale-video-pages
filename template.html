@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    html {
+        scroll-behavior: smooth;
+    }
     body {
       font-family: 'Inter', sans-serif;
     }
@@ -22,7 +25,7 @@
       aspect-ratio: 16 / 9;
       cursor: pointer;
       overflow: hidden;
-      border-radius: 0.75rem; /* 12px */
+      border-radius: 0.75rem;
       background-color: #000;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
@@ -34,20 +37,19 @@
     }
     .face-video-wrapper {
       z-index: 3;
-      width: 25%;
-      max-width: 160px;
+      width: 20%;
       height: auto;
       aspect-ratio: 1 / 1;
-      border-radius: 9999px; /* 50% */
+      border-radius: 9999px;
       overflow: hidden;
-      border: 4px solid white;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      bottom: 1.25rem; /* 20px */
-      right: 1.25rem; /* 20px */
+      bottom: 5%;
+      right: 2%;
       top: auto;
       left: auto;
       display: none;
     }
+    
     .screen-video-visual, .face-video-visual {
       object-fit: cover;
       width: 100%;
@@ -73,18 +75,17 @@
       z-index: 5;
       display: flex;
       align-items: center;
-      padding: 0.625rem; /* 10px */
+      padding: 0.625rem;
       box-sizing: border-box;
       background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
       opacity: 0;
       transition: opacity 0.3s ease-in-out;
     }
-    .player-wrapper:hover .custom-controls,
-    .player-wrapper.paused .custom-controls {
+    .player-wrapper.controls-visible .custom-controls {
       opacity: 1;
     }
     .custom-controls button {
-      background: none; border: none; cursor: pointer; padding: 0.3125rem; /* 5px */
+      background: none; border: none; cursor: pointer; padding: 0.3125rem;
       display: flex; align-items: center; justify-content: center;
     }
     .custom-controls svg { fill: white; width: 24px; height: 24px; }
@@ -92,28 +93,151 @@
     .playing #playPauseBtn .play-icon { display: none; }
     .playing #playPauseBtn .pause-icon { display: block; }
 
+    #muteBtn .volume-off-icon { display: none; }
+    .muted #muteBtn .volume-on-icon { display: none; }
+    .muted #muteBtn .volume-off-icon { display: block; }
+
     #progress-bar {
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
       height: 8px;
       flex-grow: 1;
-      margin: 0 0.9375rem; /* 15px */
+      margin: 0 0.9375rem;
       cursor: pointer;
-      background: #555;
       border-radius: 4px;
+      background: linear-gradient(to right, #2563EB 0%, #2563EB 0%, #555 0%, #555 100%);
     }
-    #progress-bar::-webkit-slider-thumb {
+    #progress-bar::-webkit-slider-thumb, #progress-bar::-moz-range-thumb, #progress-bar::-ms-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 16px;
       height: 16px;
-      background: #2563EB; /* Main site's blue color */
+      background: #2563EB;
       border-radius: 50%;
       border: 2px solid white;
     }
 
-    #time-display { color: white; font-size: 0.875rem; /* 14px */ min-width: 90px; }
+    #time-display { color: white; font-size: 0.875rem; min-width: 90px; }
+
+    #video-cta-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 4;
+      display: none;
+      padding: 0.75rem 1.5rem;
+      background-color: #2563EB;
+      color: white;
+      font-weight: 600;
+      border-radius: 9999px;
+      text-decoration: none;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      transition: all 0.2s ease-in-out;
+    }
+    #video-cta-button:hover {
+        background-color: #1D4ED8;
+        transform: scale(1.05);
+    }
+
+    #video-end-screen {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 7;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    #end-screen-cta-button {
+        padding: 1rem 2rem;
+        background-color: #2563EB;
+        color: white;
+        font-size: 1.125rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+    #end-screen-cta-button:hover {
+        background-color: #1D4ED8;
+        transform: scale(1.05);
+    }
+    #replay-button {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        background: none;
+        color: white;
+        font-size: 1rem;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        opacity: 0.8;
+        transition: opacity 0.2s ease-in-out;
+    }
+    #replay-button:hover {
+        opacity: 1;
+    }
+    #replay-button svg {
+        margin-right: 0.5rem;
+        fill: white;
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Fullscreen Mode Adjustments */
+    .player-wrapper:fullscreen {
+        width: 100%;
+        height: 100%;
+    }
+    .player-wrapper:fullscreen .video-player-container {
+        border-radius: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .player-wrapper:fullscreen .screen-video-visual {
+        object-fit: contain;
+    }
+    .player-wrapper:fullscreen .face-video-wrapper {
+        width: 20%;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 480px) {
+        .custom-controls {
+            padding: 4px;
+        }
+        .custom-controls svg {
+            width: 20px;
+            height: 20px;
+        }
+        .custom-controls button {
+            padding: 4px;
+        }
+        #time-display {
+            font-size: 0.75rem;
+            min-width: 70px;
+            white-space: nowrap;
+        }
+        #progress-bar {
+            margin: 0 6px;
+        }
+        #video-cta-button {
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        #end-screen-cta-button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -129,9 +253,9 @@
   <main class="py-12">
     <div class="max-w-4xl mx-auto px-6 text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
-      <p class="mt-4 text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">I recorded this short video to show you how we can help you grow.</p>
       
       <div class="player-wrapper mt-8" id="playerWrapper">
+        <a href="#calendar-section" id="video-cta-button">Book a Call</a>
         <div class="video-player-container" id="myCustomPlayer">
           <video class="screen-video-visual" id="screenVideo" playsinline muted preload="none" style="display:none;"></video>
           <div class="face-video-wrapper" id="faceWrapper">
@@ -145,10 +269,21 @@
               <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
               <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
             </button>
+            <button id="muteBtn">
+                <svg class="volume-on-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+                <svg class="volume-off-icon" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.1 15.34 21 13.77 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
+            </button>
             <input type="range" id="progress-bar" value="0" step="0.1">
             <span id="time-display">00:00 / 00:00</span>
             <button id="fullscreenBtn">
               <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"></path></svg>
+            </button>
+          </div>
+          <div id="video-end-screen">
+            <button id="end-screen-cta-button">Book a Call</button>
+            <button id="replay-button">
+                <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
+                Replay
             </button>
           </div>
         </div>
@@ -157,8 +292,14 @@
 
     <div id="calendar-section" class="max-w-4xl mx-auto px-6 text-center mt-16">
       <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Ready to Grow? Book Your Free Strategy Call</h2>
-      <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md">
-        <iframe src="https://cal.com/introscale/growthcall" class="w-full h-[700px] border-0 rounded-lg"></iframe>
+      <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md h-[700px]">
+        <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-growthcall"></div>
+        <script type="text/javascript">
+          (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+        Cal("init", "growthcall", {origin:"https://app.cal.com"});
+          Cal.ns.growthcall("inline", { elementOrSelector:"#my-cal-inline-growthcall", config: {"layout":"month_view","theme":"light"}, calLink: "introscale/growthcall" });
+          Cal.ns.growthcall("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#1E88E5"}},"hideEventTypeDetails":false,"layout":"month_view"});
+          </script>
       </div>
     </div>
   </main>
@@ -192,17 +333,28 @@
     const faceWrapper = document.getElementById('faceWrapper');
     const thumbnailOverlay = document.getElementById('thumbnailOverlay');
     const playPauseBtn = document.getElementById('playPauseBtn');
+    const muteBtn = document.getElementById('muteBtn');
     const progressBar = document.getElementById('progress-bar');
     const timeDisplay = document.getElementById('time-display');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const videoCtaButton = document.getElementById('video-cta-button');
+    const calendarSection = document.getElementById('calendar-section');
+    const videoEndScreen = document.getElementById('video-end-screen');
+    const endScreenCtaButton = document.getElementById('end-screen-cta-button');
+    const replayButton = document.getElementById('replay-button');
     
     screenVideo.src = "{{SCREEN_VIDEO_URL}}";
     faceVideo.src = "{{FACE_VIDEO_URL}}";
     document.getElementById('thumbnail').src = "{{THUMBNAIL_URL}}";
     
-    let screenVideoHasEnded = false;
     let hasBeenStarted = false;
-    
+    let controlsTimeout;
+    let screenVideoHasEnded = false;
+
+    if (faceVideo.muted) {
+        playerWrapper.classList.add('muted');
+    }
+
     function formatTime(time) {
       const minutes = Math.floor(time / 60);
       const seconds = Math.floor(time % 60);
@@ -210,8 +362,20 @@
     }
     
     function togglePlayPause() {
-      if (faceVideo.paused) faceVideo.play();
-      else faceVideo.pause();
+        if (hasBeenStarted) {
+            if (faceVideo.paused) {
+                faceVideo.play();
+            } else {
+                faceVideo.pause();
+            }
+        }
+    }
+
+
+    function toggleMute() {
+        faceVideo.muted = !faceVideo.muted;
+        screenVideo.muted = !screenVideo.muted;
+        playerWrapper.classList.toggle('muted', faceVideo.muted);
     }
     
     thumbnailOverlay.addEventListener('click', () => {
@@ -219,12 +383,13 @@
         hasBeenStarted = true;
         playerWrapper.classList.add('video-active');
         faceVideo.muted = false;
+        playerWrapper.classList.remove('muted');
         screenVideo.style.display = "block";
         faceVideo.style.display = "block";
         faceWrapper.style.display = "block";
         thumbnailOverlay.style.display = "none";
-        faceVideo.play();
-        screenVideo.play();
+        videoEndScreen.style.display = "none";
+        togglePlayPause();
       }
     });
     
@@ -236,7 +401,10 @@
     faceVideo.addEventListener('play', () => {
       playerWrapper.classList.add('playing');
       playerWrapper.classList.remove('paused');
-      if (!screenVideoHasEnded) screenVideo.play();
+      videoCtaButton.style.display = 'block';
+      if (!screenVideoHasEnded) {
+        screenVideo.play();
+      }
     });
     
     faceVideo.addEventListener('pause', () => {
@@ -246,50 +414,113 @@
     });
     
     faceVideo.addEventListener('timeupdate', () => {
-      progressBar.value = faceVideo.currentTime;
-      timeDisplay.textContent = `${formatTime(faceVideo.currentTime)} / ${formatTime(faceVideo.duration)}`;
-      if (!screenVideoHasEnded) screenVideo.currentTime = faceVideo.currentTime;
+        const currentTime = faceVideo.currentTime;
+        const duration = faceVideo.duration;
+
+        if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
+            screenVideoHasEnded = true;
+            screenVideo.pause();
+        }
+
+        if (!screenVideoHasEnded) {
+            screenVideo.currentTime = currentTime;
+        }
+      
+        progressBar.value = currentTime;
+        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        const progressPercent = (currentTime / duration) * 100;
+        progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
     });
     
     faceVideo.addEventListener('ended', () => {
-      playerWrapper.classList.remove('playing', 'video-active', 'paused');
-      screenVideoHasEnded = false;
-      hasBeenStarted = false;
-      faceVideo.currentTime = 0;
-      screenVideo.currentTime = 0;
-      screenVideo.style.display = "none";
-      faceVideo.style.display = "none";
-      faceWrapper.style.display = "none";
-      thumbnailOverlay.style.display = "block";
-    });
-    
-    screenVideo.addEventListener('ended', () => {
-      screenVideoHasEnded = true;
+      calendarSection.scrollIntoView({ behavior: 'smooth' });
+      playerWrapper.classList.remove('playing');
+      playerWrapper.classList.add('paused');
+      videoCtaButton.style.display = 'none';
+      videoEndScreen.style.display = 'flex';
     });
     
     playPauseBtn.addEventListener('click', togglePlayPause);
+    muteBtn.addEventListener('click', toggleMute);
+
     playerContainer.addEventListener('click', (event) => {
-      if (hasBeenStarted && event.target === playerContainer) {
+      if (hasBeenStarted && (event.target === playerContainer || event.target === screenVideo)) {
         togglePlayPause();
       }
     });
     
     progressBar.addEventListener('input', () => {
-      const newTime = parseFloat(progressBar.value);
-      faceVideo.currentTime = newTime;
-      if (newTime < screenVideo.duration) {
-        screenVideoHasEnded = false;
-        screenVideo.currentTime = newTime;
-      } else {
-        screenVideoHasEnded = true;
-        screenVideo.currentTime = screenVideo.duration;
-      }
+        const newTime = parseFloat(progressBar.value);
+        faceVideo.currentTime = newTime;
+        if (newTime < screenVideo.duration) {
+            screenVideo.currentTime = newTime;
+            if (screenVideoHasEnded) {
+                screenVideoHasEnded = false;
+                if (!faceVideo.paused) {
+                    screenVideo.play();
+                }
+            }
+        }
     });
     
     fullscreenBtn.addEventListener('click', () => {
-      if (!document.fullscreenElement) playerWrapper.requestFullscreen();
-      else document.exitFullscreen();
+      if (!document.fullscreenElement) {
+        playerWrapper.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
     });
+
+    const scrollToCalendar = () => {
+        calendarSection.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    videoCtaButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        togglePlayPause();
+
+        if (document.fullscreenElement) {
+            const onFullscreenChange = () => {
+                if (!document.fullscreenElement) {
+                    scrollToCalendar();
+                    document.removeEventListener('fullscreenchange', onFullscreenChange);
+                }
+            };
+            document.addEventListener('fullscreenchange', onFullscreenChange);
+            document.exitFullscreen();
+        } else {
+            scrollToCalendar();
+        }
+    });
+
+    endScreenCtaButton.addEventListener('click', scrollToCalendar);
+
+    replayButton.addEventListener('click', () => {
+        videoEndScreen.style.display = 'none';
+        faceVideo.currentTime = 0;
+        screenVideo.currentTime = 0;
+        screenVideoHasEnded = false;
+        togglePlayPause();
+    });
+
+    // Interactive controls logic
+    playerWrapper.addEventListener('mousemove', () => {
+        playerWrapper.classList.add('controls-visible');
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+            if (!faceVideo.paused) {
+                playerWrapper.classList.remove('controls-visible');
+            }
+        }, 3000);
+    });
+
+    playerWrapper.addEventListener('mouseleave', () => {
+        if (!faceVideo.paused) {
+            clearTimeout(controlsTimeout);
+            playerWrapper.classList.remove('controls-visible');
+        }
+    });
+
   </script>
 </body>
 </html>
