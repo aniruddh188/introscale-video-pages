@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'RepliQ results.csv'
+      - 'RepliQ_results.csv'
       
   # This also allows you to run the workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
@@ -44,4 +44,4 @@ jobs:
         with:
           commit_message: "Automated: Updated videos.json and CSV with final links"
           # The file pattern now includes both files that need to be saved.
-          file_pattern: "videos.json 'RepliQ results.csv'"
+          file_pattern: "videos.json 'RepliQ_results.csv'"
