@@ -489,33 +489,43 @@ function updateFaceOverlayPosition() {
 
   let contentW, contentH, offsetX = 0, offsetY = 0;
   if (containerAspect > videoAspect) {
-    // full height used, pillarbox
     contentH = ch;
     contentW = ch * videoAspect;
     offsetX = (cw - contentW) / 2;
   } else {
-    // full width used, letterbox
     contentW = cw;
     contentH = cw / videoAspect;
     offsetY = (ch - contentH) / 2;
   }
 
-  // Padding inside the content box
   const padX = contentW * 0.02;
   const padY = contentH * 0.05;
 
-  const circleW = contentW * 0.20; // 20% of visible width
+  const circleW = contentW * 0.20;
 
-  // Place circle relative to content box
   faceWrapper.style.width  = `${circleW}px`;
-  faceWrapper.style.height = `${circleW}px`; // force square
+  faceWrapper.style.height = `${circleW}px`; // square
   faceWrapper.style.left   = `${offsetX + contentW - circleW - padX}px`;
   faceWrapper.style.top    = `${offsetY + contentH - circleW - padY}px`;
-
   faceWrapper.style.right  = 'auto';
   faceWrapper.style.bottom = 'auto';
   faceWrapper.style.transform = 'none';
+
+  // 👉 Add this call
+  adjustForLandscape();
 }
+
+function adjustForLandscape() {
+  if (!isMobile() || !document.fullscreenElement) return;
+
+  // Check if device is in landscape
+  if (window.innerWidth > window.innerHeight) {
+    // Nudge the circle leftwards in fullscreen landscape
+    const currentRight = parseFloat(faceWrapper.style.right) || 0;
+    faceWrapper.style.right = `${currentRight + 40}px`; // tweak this value
+  }
+}
+
 
 
     // *** MODIFICATION START ***
@@ -543,5 +553,6 @@ faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
   </script>
 </body>
 </html>
+
 
 
