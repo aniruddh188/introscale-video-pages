@@ -37,7 +37,7 @@
     }
     .face-video-wrapper {
       z-index: 3;
-      width: 20%; /* Base size */
+      width: 20%;
       height: auto;
       aspect-ratio: 1 / 1;
       border-radius: 9999px;
@@ -349,6 +349,7 @@
     
     let hasBeenStarted = false;
     let controlsTimeout;
+    let syncInterval;
 
     if (faceVideo.muted) {
         playerWrapper.classList.add('muted');
@@ -361,11 +362,17 @@
     }
     
     function togglePlayPause() {
-      if (hasBeenStarted) {
-        if (faceVideo.paused) faceVideo.play();
-        else faceVideo.pause();
-      }
+        if (hasBeenStarted) {
+            if (faceVideo.paused) {
+                // Use promises to ensure both play actions are attempted
+                Promise.all([faceVideo.play(), screenVideo.play()]).catch(e => console.error("Play failed", e));
+            } else {
+                faceVideo.pause();
+                screenVideo.pause();
+            }
+        }
     }
+
 
     function toggleMute() {
         faceVideo.muted = !faceVideo.muted;
@@ -384,8 +391,7 @@
         faceWrapper.style.display = "block";
         thumbnailOverlay.style.display = "none";
         videoEndScreen.style.display = "none";
-        faceVideo.play();
-        screenVideo.play();
+        togglePlayPause(); // Use the unified play/pause function
       }
     });
     
@@ -395,16 +401,19 @@
     });
     
     faceVideo.addEventListener('play', () => {
-      playerWrapper.classList.add('playing');
-      playerWrapper.classList.remove('paused');
-      videoCtaButton.style.display = 'block';
-      screenVideo.play();
+        playerWrapper.classList.add('playing');
+        playerWrapper.classList.remove('paused');
+        videoCtaButton.style.display = 'block';
+        // Start high-frequency sync
+        syncInterval = setInterval(() => {
+            screenVideo.currentTime = faceVideo.currentTime;
+        }, 50); // Sync every 50ms
     });
     
     faceVideo.addEventListener('pause', () => {
-      playerWrapper.classList.remove('playing');
-      playerWrapper.classList.add('paused');
-      screenVideo.pause();
+        playerWrapper.classList.remove('playing');
+        playerWrapper.classList.add('paused');
+        clearInterval(syncInterval); // Stop sync when paused
     });
     
     faceVideo.addEventListener('timeupdate', () => {
@@ -414,7 +423,6 @@
       timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
       const progressPercent = (currentTime / duration) * 100;
       progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
-      screenVideo.currentTime = currentTime;
     });
     
     faceVideo.addEventListener('ended', () => {
@@ -423,6 +431,7 @@
       playerWrapper.classList.add('paused');
       videoCtaButton.style.display = 'none';
       videoEndScreen.style.display = 'flex';
+      clearInterval(syncInterval);
     });
     
     playPauseBtn.addEventListener('click', togglePlayPause);
@@ -456,9 +465,7 @@
 
     videoCtaButton.addEventListener('click', (event) => {
         event.preventDefault();
-        if (!faceVideo.paused) {
-            faceVideo.pause();
-        }
+        togglePlayPause(); // Pause the video
 
         if (document.fullscreenElement) {
             const onFullscreenChange = () => {
@@ -480,7 +487,7 @@
         videoEndScreen.style.display = 'none';
         faceVideo.currentTime = 0;
         screenVideo.currentTime = 0;
-        faceVideo.play();
+        togglePlayPause();
     });
 
     // Interactive controls logic
