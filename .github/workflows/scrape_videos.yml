@@ -37,5 +37,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated: Updated videos.json and CSV with final links"
-          # --- FIX: Removed the file_pattern to commit all changed files ---
+          # --- FIX: Add the '-A' flag to ensure all changes (including new files) are committed ---
+          add_options: '-A'
 
