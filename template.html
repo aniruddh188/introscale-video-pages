@@ -56,6 +56,7 @@
 .screen-video-visual {
   transform: translateZ(0); /* force GPU acceleration */
   will-change: transform;   /* hint browser to optimize */
+  image-rendering: optimizeSpeed; /* prefer speed over quality */
 }
 
 
@@ -559,6 +560,7 @@ faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
   </script>
 </body>
 </html>
+
 
 
 
