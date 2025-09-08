@@ -2,9 +2,14 @@
 [build]
   functions = "netlify/functions/"
 
+# --- FIX: Explicitly include the videos.json data file with the function ---
+[functions]
+  included_files = ["netlify/functions/videos.json"]
+
 # This is the powerful rule that makes your dynamic pages work.
 # It tells Netlify to run your 'getVideo' function for every single page request.
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/getVideo"
   status = 200
+
