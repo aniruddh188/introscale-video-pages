@@ -33,10 +33,12 @@ jobs:
       - name: Run the scraping script
         run: python 1_create_layered_videos_json.py
 
+      # --- NEW: Explicitly stage all new and modified files ---
+      - name: Stage changed files
+        run: git add -A
+
       - name: Commit and push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated: Updated videos.json and CSV with final links"
-          # --- FIX: Add the '-A' flag to ensure all changes (including new files) are committed ---
-          add_options: '-A'
 
