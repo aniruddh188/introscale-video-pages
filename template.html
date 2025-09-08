@@ -208,18 +208,21 @@
     }
 
     /* Mobile Responsive Adjustments */
-   @media (max-width: 768px) {
-      .player-wrapper:fullscreen .face-video-wrapper {
-        position: absolute !important;
-        bottom: auto !important;
-        top: 1rem !important;
-        right: 1rem !important;
-        left: auto !important;
-        width: 25% !important;
-        height: auto !important;
-        aspect-ratio: 1 / 1 !important;
-      }
-    }
+  /* Keep circle video in same relative spot in fullscreen (mobile) */
+@media (max-width: 768px) {
+  .player-wrapper:fullscreen .face-video-wrapper {
+    position: absolute !important;
+    top: 5% !important;        /* adjust relative to video height */
+    right: 5% !important;      /* adjust relative to video width */
+    bottom: auto !important;
+    left: auto !important;
+    width: 25% !important;     /* stays proportional */
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    transform: none !important;
+  }
+}
+
 
   </style>
 </head>
@@ -507,3 +510,4 @@
   </script>
 </body>
 </html>
+
