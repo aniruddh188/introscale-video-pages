@@ -382,5 +382,138 @@
     });
 
     faceVideo.addEventListener('ended', () => {
-      videoCtaButton.style.display = 'none';
+  // When the face video ends — show the calendar section and end-screen
+  calendarSection.scrollIntoView({ behavior: 'smooth' });
+  playerWrapper.classList.remove('playing');
+  playerWrapper.classList.add('paused');
+  videoCtaButton.style.display = 'none';
+  videoEndScreen.style.display = 'flex';
+  // pause & align both videos at the end
+  try { faceVideo.pause(); } catch(e){}
+  try { screenVideo.pause(); } catch(e){}
+  if (faceVideo.duration) {
+    faceVideo.currentTime = faceVideo.duration;
+    screenVideo.currentTime = faceVideo.duration;
+  }
+  showControls();
+});
+
+// Play / Pause control
+playPauseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!hasBeenStarted) { thumbnailOverlay.click(); return; }
+  if (faceVideo.paused) faceVideo.play(); else faceVideo.pause();
+});
+
+// Mute control
+muteBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleMute(); });
+
+// Clicking the container toggles playback (but ignore clicks on controls / overlays)
+playerContainer.addEventListener('click', (event) => {
+  const target = event.target;
+  if (customControls.contains(target) || thumbnailOverlay.contains(target) || videoEndScreen.contains(target) || target === playPauseBtn || target === muteBtn || target === fullscreenBtn || target === progressBar) return;
+  if (!hasBeenStarted) thumbnailOverlay.click(); else togglePlayPause();
+});
+
+// Seeking
+progressBar.addEventListener('input', (e) => {
+  const newTime = parseFloat(e.target.value);
+  if (isNaN(newTime) || !faceVideo.duration) return;
+  faceVideo.currentTime = newTime;
+  screenVideo.currentTime = newTime;
+  const progressPercent = (newTime / faceVideo.duration) * 100;
+  progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+  showControls();
+});
+
+// Fullscreen toggle
+fullscreenBtn.addEventListener('click', async (e) => {
+  e.stopPropagation();
+  try {
+    if (!document.fullscreenElement) await playerWrapper.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch (err) { console.warn('Fullscreen error', err); }
+});
+
+// Keep a light-weight CSS/JS sync for entering/exiting fullscreen
+document.addEventListener('fullscreenchange', () => {
+  if (document.fullscreenElement) {
+    playerWrapper.classList.add('in-fullscreen');
+    // hint for some browsers to repaint and pick up :fullscreen CSS
+    faceWrapper.style.willChange = 'transform';
+  } else {
+    playerWrapper.classList.remove('in-fullscreen');
+    faceWrapper.style.willChange = '';
+  }
+});
+
+// CTA: pause video and scroll to calendar (handles exiting fullscreen first)
+const scrollToCalendarAndPause = () => {
+  if (!faceVideo.paused) faceVideo.pause();
+  if (document.fullscreenElement) {
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        calendarSection.scrollIntoView({ behavior: 'smooth' });
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+      }
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.exitFullscreen();
+  } else {
+    calendarSection.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+videoCtaButton.addEventListener('click', (event) => { event.preventDefault(); scrollToCalendarAndPause(); });
+endScreenCtaButton.addEventListener('click', (e) => { e.preventDefault(); scrollToCalendarAndPause(); });
+
+replayButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  videoEndScreen.style.display = 'none';
+  faceVideo.currentTime = 0;
+  screenVideo.currentTime = 0;
+  faceVideo.play();
+});
+
+// Controls: auto-show on pointer/mouse/touch activity and hide after inactivity
+let touchStartTime = 0;
+playerWrapper.addEventListener('mousemove', showControls);
+playerWrapper.addEventListener('pointermove', showControls);
+playerWrapper.addEventListener('touchstart', (e) => { touchStartTime = Date.now(); showControls(); }, { passive: true });
+
+// Treat short taps as play/pause toggle when not interacting with controls
+playerWrapper.addEventListener('touchend', (e) => {
+  const touchDuration = Date.now() - touchStartTime;
+  const target = e.target;
+  if (touchDuration < 250 && !customControls.contains(target) && !videoEndScreen.contains(target)) {
+    if (!hasBeenStarted) thumbnailOverlay.click(); else togglePlayPause();
+  }
+});
+
+// Keyboard shortcuts (space = play/pause, M = mute)
+document.addEventListener('keydown', (e) => {
+  if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlayPause(); }
+  if (e.key === 'm' || e.key === 'M') toggleMute();
+});
+
+// If playback stalls, show controls so user can interact
+faceVideo.addEventListener('waiting', showControls);
+screenVideo.addEventListener('waiting', showControls);
+
+// Hint controls on initial interaction
+thumbnailOverlay.addEventListener('mouseenter', showControls);
+thumbnailOverlay.addEventListener('touchstart', showControls, { passive: true });
+
+// Keep screenVideo loosely in sync during unusual seeking
+screenVideo.addEventListener('seeking', () => { if (Math.abs(screenVideo.currentTime - faceVideo.currentTime) > 0.5) screenVideo.currentTime = faceVideo.currentTime; });
+
+// Final UX hint: briefly show controls on load
+showControls();
+
+</script>
+</body>
+</html>
+
      
+
