@@ -530,13 +530,21 @@
       resizeTimeout = setTimeout(updateFaceOverlayPosition, 150);
     }
 
-    // Recalculate when entering/exiting fullscreen, rotating, resizing, or once video metadata is ready
-    document.addEventListener('fullscreenchange', updateFaceOverlayPosition);
-    window.addEventListener('resize', handleResizeOrRotate);
-    window.addEventListener('orientationchange', handleResizeOrRotate);
-    screenVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
-    // *** MODIFICATION END ***
+// Recalculate on fullscreen toggle, resize, and orientation change
+document.addEventListener('fullscreenchange', updateFaceOverlayPosition);
+window.addEventListener('resize', updateFaceOverlayPosition);
+
+// Orientation on mobile can lag — force recalculation with a small delay
+window.addEventListener('orientationchange', () => {
+  setTimeout(updateFaceOverlayPosition, 300);
+});
+
+// Also recalc when videos load (face + screen)
+screenVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
+faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
+
 
   </script>
 </body>
 </html>
+
