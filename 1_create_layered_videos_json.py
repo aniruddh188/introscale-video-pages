@@ -3,20 +3,21 @@ from bs4 import BeautifulSoup
 import json
 import time
 import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import WebDriverException
 
 # --- Configuration ---
-CSV_FILE_PATH = 'RepliQ_results.csv'
-# --- FIX: Set the output path to the correct folder for Netlify ---
 JSON_OUTPUT_PATH = 'netlify/functions/videos.json' 
+# The name of the worksheet within your Google Sheet (e.g., "Sheet1")
+WORKSHEET_NAME = "Sheet1"
 
 def setup_driver():
     """Initializes the Selenium WebDriver for a GitHub Actions environment."""
     try:
         options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
+        options.add_argument('--headless') # Must run headless in GitHub Actions
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--log-level=3')
@@ -28,106 +29,120 @@ def setup_driver():
         return None
 
 def scrape_video_links(driver, url):
-    """
-    Visits a page and scrapes the screen video, face video, and thumbnail URLs.
-    """
+    """Visits a page and scrapes the required video links."""
     try:
         driver.get(url)
-        time.sleep(3) 
-        
+        time.sleep(3) # A brief wait for the page's initial data to be stable
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        
         script_tag = soup.find('script', id='__NEXT_DATA__')
-        if not script_tag:
+        if not script_tag: 
+            print("  - Error: Could not find the __NEXT_DATA__ script tag.")
             return None, None, None
-
+        
         page_data = json.loads(script_tag.string)
         result_data = page_data['props']['pageProps']['pageData']['result'][0]
         
-        screen_video_url = result_data.get('imgUrl')
-        face_video_url = result_data.get('selectedVideo')
-        thumbnail_url = result_data.get('previewImgOrGifUrl')
+        # Extract the three necessary URLs from the JSON data
+        screen_url = result_data.get('imgUrl')
+        face_url = result_data.get('selectedVideo')
+        thumb_url = result_data.get('previewImgOrGifUrl')
         
-        if screen_video_url and face_video_url and thumbnail_url:
-            return screen_video_url, face_video_url, thumbnail_url
-        else:
-            return None, None, None
-
-    except Exception:
+        if screen_url and face_url and thumb_url:
+            print("  - Success! Found all three required links.")
+            return screen_url, face_url, thumb_url
+        
+        print("  - Error: Missing one or more required links in the page data.")
+        return None, None, None
+    except Exception as e:
+        print(f"  - An unexpected error occurred during scraping: {e}")
         return None, None, None
 
 def main():
-    """Main function to control the scraping and CSV update process."""
-    # Ensure the target directory exists before trying to save the file
-    if os.path.exists(JSON_OUTPUT_PATH):
-        os.remove(JSON_OUTPUT_PATH)
-    os.makedirs(os.path.dirname(JSON_OUTPUT_PATH), exist_ok=True)
-    
+    """Main function to sync with Google Sheets, scrape, and write back."""
+    # --- Authenticate with Google Sheets using secrets ---
+    print("\n--- Connecting to Google Sheets ---")
     try:
-        df = pd.read_csv(CSV_FILE_PATH, engine='python')
-    except FileNotFoundError:
-        print(f"Error: The file '{CSV_FILE_PATH}' was not found.")
+        gcp_sa_key = os.environ['GCP_SA_KEY']
+        sheet_id = os.environ['GOOGLE_SHEET_ID']
+        
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        creds_json = json.loads(gcp_sa_key)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
+        client = gspread.authorize(creds)
+        
+        sheet = client.open_by_key(sheet_id).worksheet(WORKSHEET_NAME)
+        print("✅ Successfully connected to Google Sheets.")
+    except Exception as e:
+        print(f"❌ Error connecting to Google Sheets: {e}")
         return
 
-    print("\n--- Starting to Scrape Video Links for Netlify ---")
+    # --- Read data from Google Sheet ---
+    records = sheet.get_all_records()
+    df = pd.DataFrame(records)
+    print(f"Read {len(df)} rows from the sheet.")
+
+    # --- Scrape Video Links ---
+    print("\n--- Starting to Scrape Video Links ---")
     driver = setup_driver()
     if not driver: return
 
     videos_data = {}
-    
     for index, row in df.iterrows():
         page_url = row.get('Video link')
         company_name = row.get('CName')
         
-        if pd.isna(page_url) or pd.isna(company_name):
+        if not page_url or not company_name or not str(page_url).startswith('http'):
             continue
 
-        video_id = page_url.split('/')[-1]
-        prospect_name = str(company_name).strip()
-        
-        print(f"  - Prospect: {prospect_name} ({video_id})")
+        video_id = str(page_url).split('/')[-1]
+        print(f"  - Prospect: {company_name} ({video_id})")
         
         screen_url, face_url, thumb_url = scrape_video_links(driver, page_url)
 
         if screen_url and face_url and thumb_url:
             videos_data[video_id] = { 
-                "prospectName": prospect_name, 
+                "prospectName": str(company_name), 
                 "screenVideoUrl": screen_url, 
                 "faceVideoUrl": face_url,
                 "thumbnailUrl": thumb_url 
             }
         else:
-            print(f"  - WARNING: Could not get data for {prospect_name}. Skipping.")
+            print(f"  - WARNING: Could not get data for {company_name}. Skipping.")
 
     driver.quit()
 
+    # --- Create videos.json for Netlify ---
+    os.makedirs(os.path.dirname(JSON_OUTPUT_PATH), exist_ok=True)
     with open(JSON_OUTPUT_PATH, 'w') as f:
         json.dump(videos_data, f, indent=2)
-
     print(f"\nSuccessfully created '{JSON_OUTPUT_PATH}' with {len(videos_data)} entries.")
 
-    print("\n--- Updating CSV with final introscale.com links ---")
-    try:
-        final_links = []
-        for index, row in df.iterrows():
-            page_url = row.get('Video link')
-            if pd.notna(page_url):
-                video_id = page_url.split('/')[-1]
-                if video_id in videos_data:
-                    final_links.append(f"https://video.introscale.com/{video_id}")
-                else:
-                    # Preserve existing link if scraping failed
-                    final_links.append(row.get('Final Link', ''))
+    # --- Update DataFrame with final links ---
+    print("\n--- Preparing to update Google Sheet ---")
+    final_links = []
+    for index, row in df.iterrows():
+        page_url = row.get('Video link')
+        if page_url and isinstance(page_url, str):
+            video_id = page_url.split('/')[-1]
+            if video_id in videos_data:
+                final_links.append(f"https://video.introscale.com/{video_id}")
             else:
-                final_links.append("")
-
-        df['Final Link'] = final_links
-        df.to_csv(CSV_FILE_PATH, index=False)
-        print(f"✅ Successfully updated '{CSV_FILE_PATH}' with a new 'Final Link' column.")
+                final_links.append(row.get('Final Link', '')) # Preserve old link if scraping failed
+        else:
+            final_links.append("")
+    
+    df['Final Link'] = final_links
+    
+    # --- Write updated data back to Google Sheet ---
+    try:
+        # Convert NaN to empty strings for Google Sheets
+        df_cleaned = df.fillna('')
+        sheet.update([df_cleaned.columns.values.tolist()] + df_cleaned.values.tolist())
+        print("✅ Successfully updated Google Sheet with new data.")
     except Exception as e:
-        print(f"  - Warning: Could not update the CSV file. Error: {e}")
+        print(f"❌ Error writing back to Google Sheets: {e}")
 
-    print("\nChanges will now be committed back to the repository.")
+    print("\n--- Automation Complete ---")
 
 if __name__ == "__main__":
     main()
