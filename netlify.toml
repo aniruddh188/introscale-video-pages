@@ -1,0 +1,10 @@
+# This tells Netlify where to find your serverless functions directory.
+[build]
+  functions = "netlify/functions/"
+
+# This is the powerful rule that makes your dynamic pages work.
+# It tells Netlify to run your 'getVideo' function for every single page request.
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/getVideo"
+  status = 200

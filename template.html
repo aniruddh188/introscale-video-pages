@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Video for {{PROSPECT_NAME}}</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      background-color: #f4f7f6; 
+      margin: 0; 
+      padding: 20px; 
+      color: #333; 
+    }
+    .main-container { 
+      max-width: 800px; 
+      margin: 20px auto; 
+      text-align: center; 
+    }
+    h1 { font-size: 2.2em; margin-bottom: 10px; }
+    .subtitle { font-size: 1.2em; color: #666; margin-bottom: 30px; }
+
+    /* --- PLAYER WRAPPER --- */
+    .player-wrapper {
+      max-width: 800px;
+      margin: auto;
+      position: relative;
+    }
+
+    .video-player-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 12px;
+      background-color: #000;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .screen-video-visual, .face-video-wrapper {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    .screen-video-visual { z-index: 1; }
+    .face-video-wrapper { 
+      z-index: 3; 
+      width: 25%;
+      max-width: 160px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      bottom: 20px;
+      right: 20px;
+      top: auto;
+      left: auto;
+      display: none; /* hide during thumbnail GIF preview */
+    }
+    .screen-video-visual, .face-video-visual { 
+      object-fit: cover; 
+      width: 100%; 
+      height: 100%; 
+    }
+    
+    /* --- THUMBNAIL OVERLAY --- */
+    .thumbnail-overlay {
+      position: absolute; 
+      top: 0; left: 0; 
+      width: 100%; 
+      height: 100%; 
+      z-index: 6;
+      cursor: pointer;
+    }
+    .thumbnail-overlay img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+      opacity: 1; /* keep bright */
+    }
+
+    /* --- CUSTOM CONTROLS --- */
+    .custom-controls {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      box-sizing: border-box;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+      opacity: 0; 
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Show controls on hover or when paused */
+    .player-wrapper:hover .custom-controls,
+    .player-wrapper.paused .custom-controls {
+      opacity: 1;
+    }
+
+    .custom-controls button {
+      background: none; border: none; cursor: pointer; padding: 5px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .custom-controls svg { fill: white; width: 24px; height: 24px; }
+    #playPauseBtn .pause-icon { display: none; }
+    .playing #playPauseBtn .play-icon { display: none; }
+    .playing #playPauseBtn .pause-icon { display: block; }
+    
+    #progress-bar {
+      -webkit-appearance: none; 
+      appearance: none; 
+      width: 100%; 
+      height: 8px;
+      flex-grow: 1; 
+      margin: 0 15px; 
+      cursor: pointer; 
+      background: #555; 
+      border-radius: 4px;
+    }
+    #progress-bar::-webkit-slider-thumb {
+      -webkit-appearance: none; 
+      appearance: none; 
+      width: 16px; 
+      height: 16px;
+      background: #0095ff; 
+      border-radius: 50%; 
+      border: 2px solid white;
+    }
+    
+    #time-display { color: white; font-size: 14px; min-width: 90px; }
+    
+    #calendar-section { padding: 40px 0; }
+    iframe { width: 100%; height: 700px; border: 1px solid #ddd; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <div class="main-container">
+    <h1>A Custom Strategy for {{PROSPECT_NAME}}</h1>
+    <p class="subtitle">I recorded this short video to show you how we can help you grow.</p>
+    
+    <div class="player-wrapper" id="playerWrapper">
+      <div class="video-player-container" id="myCustomPlayer">
+        <video class="screen-video-visual" id="screenVideo" playsinline muted preload="none" style="display:none;"></video>
+        <div class="face-video-wrapper" id="faceWrapper">
+          <video class="face-video-visual" id="faceVideo" playsinline muted preload="none" style="display:none;"></video>
+        </div>
+        <div class="thumbnail-overlay" id="thumbnailOverlay">
+          <img class="video-thumbnail" id="thumbnail" alt="Video Thumbnail">
+        </div>
+        <div class="custom-controls" id="customControls">
+          <button id="playPauseBtn">
+            <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+            <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+          </button>
+          <input type="range" id="progress-bar" value="0" step="0.1">
+          <span id="time-display">00:00 / 00:00</span>
+          <button id="fullscreenBtn">
+            <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="calendar-section" class="main-container">
+    <h2>Ready to Grow? Book Your Free Strategy Call</h2>
+    <iframe src="https://cal.com/introscale/growthcall"></iframe>
+  </div>
+
+  <script>
+    const playerWrapper = document.getElementById('playerWrapper');
+    const playerContainer = document.getElementById('myCustomPlayer');
+    const screenVideo = document.getElementById('screenVideo');
+    const faceVideo = document.getElementById('faceVideo');
+    const faceWrapper = document.getElementById('faceWrapper');
+    const thumbnailOverlay = document.getElementById('thumbnailOverlay');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const progressBar = document.getElementById('progress-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    screenVideo.src = "{{SCREEN_VIDEO_URL}}";
+    faceVideo.src = "{{FACE_VIDEO_URL}}";
+    document.getElementById('thumbnail').src = "{{THUMBNAIL_URL}}";
+
+    let screenVideoHasEnded = false;
+    let hasBeenStarted = false;
+
+    function formatTime(time) {
+      const minutes = Math.floor(time / 60);
+      const seconds = Math.floor(time % 60);
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    
+    function togglePlayPause() {
+      if (faceVideo.paused) faceVideo.play();
+      else faceVideo.pause();
+    }
+
+    // --- Initial click on thumbnail (one click only)
+    thumbnailOverlay.addEventListener('click', () => {
+      if (!hasBeenStarted) {
+        hasBeenStarted = true;
+        playerWrapper.classList.add('video-active');
+        faceVideo.muted = false;
+        screenVideo.style.display = "block";
+        faceVideo.style.display = "block";
+        faceWrapper.style.display = "block";
+        thumbnailOverlay.style.display = "none";
+        faceVideo.play();
+        screenVideo.play();
+      }
+    });
+
+    faceVideo.addEventListener('loadedmetadata', () => {
+      progressBar.max = faceVideo.duration;
+      timeDisplay.textContent = `00:00 / ${formatTime(faceVideo.duration)}`;
+    });
+
+    faceVideo.addEventListener('play', () => {
+      playerWrapper.classList.add('playing');
+      playerWrapper.classList.remove('paused');
+      if (!screenVideoHasEnded) screenVideo.play();
+    });
+
+    faceVideo.addEventListener('pause', () => {
+      playerWrapper.classList.remove('playing');
+      playerWrapper.classList.add('paused');
+      screenVideo.pause();
+    });
+
+    faceVideo.addEventListener('timeupdate', () => {
+      progressBar.value = faceVideo.currentTime;
+      timeDisplay.textContent = `${formatTime(faceVideo.currentTime)} / ${formatTime(faceVideo.duration)}`;
+      if (!screenVideoHasEnded) screenVideo.currentTime = faceVideo.currentTime;
+    });
+
+    faceVideo.addEventListener('ended', () => {
+      playerWrapper.classList.remove('playing', 'video-active', 'paused');
+      screenVideoHasEnded = false;
+      hasBeenStarted = false;
+      faceVideo.currentTime = 0;
+      screenVideo.currentTime = 0;
+      screenVideo.style.display = "none";
+      faceVideo.style.display = "none";
+      faceWrapper.style.display = "none";
+      thumbnailOverlay.style.display = "block";
+    });
+    
+    screenVideo.addEventListener('ended', () => {
+      screenVideoHasEnded = true;
+    });
+
+    // Controls
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    playerContainer.addEventListener('click', (event) => {
+      if (hasBeenStarted && event.target === playerContainer) {
+        togglePlayPause();
+      }
+    });
+
+    progressBar.addEventListener('input', () => {
+      const newTime = parseFloat(progressBar.value);
+      faceVideo.currentTime = newTime;
+      if (newTime < screenVideo.duration) {
+        screenVideoHasEnded = false;
+        screenVideo.currentTime = newTime;
+      } else {
+        screenVideoHasEnded = true;
+        screenVideo.currentTime = screenVideo.duration;
+      }
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) playerWrapper.requestFullscreen();
+      else document.exitFullscreen();
+    });
+  </script>
+</body>
+</html>
