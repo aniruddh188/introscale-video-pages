@@ -207,7 +207,7 @@
         object-fit: contain;
     }
     .player-wrapper:fullscreen .face-video-wrapper {
-        width: 15%; /* Use percentage for proportional scaling */
+        width: 15%; /* FINAL FIX: Use percentage to scale with parent */
         height: auto;
         bottom: 7%;
         right: 3%;
@@ -494,13 +494,17 @@
         playerWrapper.classList.add('controls-visible');
         clearTimeout(controlsTimeout);
         controlsTimeout = setTimeout(() => {
-            playerWrapper.classList.remove('controls-visible');
+            if (!faceVideo.paused) {
+                playerWrapper.classList.remove('controls-visible');
+            }
         }, 3000);
     });
 
     playerWrapper.addEventListener('mouseleave', () => {
-        clearTimeout(controlsTimeout);
-        playerWrapper.classList.remove('controls-visible');
+        if (!faceVideo.paused) {
+            clearTimeout(controlsTimeout);
+            playerWrapper.classList.remove('controls-visible');
+        }
     });
 
   </script>
