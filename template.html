@@ -101,7 +101,6 @@
     .playing #playPauseBtn .play-icon { display: none; }
     .playing #playPauseBtn .pause-icon { display: block; }
 
-    /* Corrected Mute button icons logic */
     #muteBtn .volume-off-icon { display: none; }
     .muted #muteBtn .volume-on-icon { display: none; }
     .muted #muteBtn .volume-off-icon { display: block; }
@@ -197,6 +196,37 @@
         fill: white;
         width: 20px;
         height: 20px;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 480px) {
+        .custom-controls {
+            padding: 4px;
+        }
+        .custom-controls svg {
+            width: 20px;
+            height: 20px;
+        }
+        .custom-controls button {
+            padding: 4px;
+        }
+        #time-display {
+            font-size: 0.75rem; /* 12px */
+            min-width: 75px;
+        }
+        #progress-bar {
+            margin: 0 8px;
+        }
+        #video-cta-button {
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        #end-screen-cta-button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
     }
   </style>
 </head>
@@ -309,7 +339,6 @@
     
     let hasBeenStarted = false;
     
-    // Set initial muted state on wrapper
     if (faceVideo.muted) {
         playerWrapper.classList.add('muted');
     }
@@ -329,7 +358,7 @@
 
     function toggleMute() {
         faceVideo.muted = !faceVideo.muted;
-        screenVideo.muted = !screenVideo.muted; // Ensure both videos are in sync
+        screenVideo.muted = !screenVideo.muted;
         playerWrapper.classList.toggle('muted', faceVideo.muted);
     }
     
