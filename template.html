@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>A Video for {{PROSPECT_NAME}} | Introscale</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -10,15 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    html {
-        scroll-behavior: smooth;
-    }
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    .player-wrapper {
-      position: relative;
-    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; }
+
+    .player-wrapper { position: relative; }
     .video-player-container {
       position: relative;
       width: 100%;
@@ -29,12 +24,14 @@
       background-color: #000;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
+
     .screen-video-visual, .face-video-wrapper {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
       pointer-events: none;
     }
+
     .face-video-wrapper {
       z-index: 3;
       width: 20%;
@@ -49,25 +46,22 @@
       left: auto;
       display: none;
     }
-    
+
     .screen-video-visual, .face-video-visual {
       object-fit: cover;
       width: 100%;
       height: 100%;
     }
+
     .thumbnail-overlay {
       position: absolute;
       top: 0; left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       z-index: 6;
       cursor: pointer;
     }
-    .thumbnail-overlay img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .thumbnail-overlay img { width: 100%; height: 100%; object-fit: cover; }
+
     .custom-controls {
       position: absolute;
       bottom: 0; left: 0;
@@ -81,14 +75,14 @@
       opacity: 0;
       transition: opacity 0.3s ease-in-out;
     }
-    .player-wrapper.controls-visible .custom-controls {
-      opacity: 1;
-    }
+    .player-wrapper.controls-visible .custom-controls { opacity: 1; }
+
     .custom-controls button {
       background: none; border: none; cursor: pointer; padding: 0.3125rem;
       display: flex; align-items: center; justify-content: center;
     }
     .custom-controls svg { fill: white; width: 24px; height: 24px; }
+
     #playPauseBtn .pause-icon { display: none; }
     .playing #playPauseBtn .play-icon { display: none; }
     .playing #playPauseBtn .pause-icon { display: block; }
@@ -108,7 +102,9 @@
       border-radius: 4px;
       background: linear-gradient(to right, #2563EB 0%, #2563EB 0%, #555 0%, #555 100%);
     }
-    #progress-bar::-webkit-slider-thumb, #progress-bar::-moz-range-thumb, #progress-bar::-ms-thumb {
+    #progress-bar::-webkit-slider-thumb,
+    #progress-bar::-moz-range-thumb,
+    #progress-bar::-ms-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 16px;
@@ -135,99 +131,60 @@
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
       transition: all 0.2s ease-in-out;
     }
-    #video-cta-button:hover {
-        background-color: #1D4ED8;
-        transform: scale(1.05);
-    }
+    #video-cta-button:hover { background-color: #1D4ED8; transform: scale(1.05); }
 
     #video-end-screen {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        z-index: 7;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 7;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     #end-screen-cta-button {
-        padding: 1rem 2rem;
-        background-color: #2563EB;
-        color: white;
-        font-size: 1.125rem;
-        font-weight: 700;
-        border: none;
-        border-radius: 9999px;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
+      padding: 1rem 2rem;
+      background-color: #2563EB;
+      color: white;
+      font-size: 1.125rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
     }
-    #end-screen-cta-button:hover {
-        background-color: #1D4ED8;
-        transform: scale(1.05);
-    }
+    #end-screen-cta-button:hover { background-color: #1D4ED8; transform: scale(1.05); }
     #replay-button {
-        margin-top: 1rem;
-        padding: 0.5rem 1rem;
-        background: none;
-        color: white;
-        font-size: 1rem;
-        font-weight: 500;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        opacity: 0.8;
-        transition: opacity 0.2s ease-in-out;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: none; color: white; font-size: 1rem; font-weight: 500;
+      border: none; cursor: pointer; display: flex; align-items: center; opacity: 0.8;
+      transition: opacity 0.2s ease-in-out;
     }
-    #replay-button:hover {
-        opacity: 1;
-    }
-    #replay-button svg {
-        margin-right: 0.5rem;
-        fill: white;
-        width: 20px;
-        height: 20px;
-    }
+    #replay-button:hover { opacity: 1; }
+    #replay-button svg { margin-right: 0.5rem; fill: white; width: 20px; height: 20px; }
 
-    /* Fullscreen Mode Adjustments */
-    .player-wrapper:fullscreen {
-        width: 100%;
-        height: 100%;
-    }
-    .player-wrapper:fullscreen .video-player-container {
-        border-radius: 0;
-        width: 100%;
-        height: 100%;
-    }
-    .player-wrapper:fullscreen .screen-video-visual {
-        object-fit: contain;
-    }
-    .player-wrapper:fullscreen .face-video-wrapper {
-        width: 20%;
-    }
+    /* Fullscreen tweaks */
+    .player-wrapper:fullscreen { width: 100%; height: 100%; }
+    .player-wrapper:fullscreen .video-player-container { border-radius: 0; width: 100%; height: 100%; }
+    .player-wrapper:fullscreen .screen-video-visual { object-fit: contain; } /* important for letterbox calc */
+    .player-wrapper:fullscreen .face-video-wrapper { /* base: we'll fine-tune via JS on mobile */ }
 
-    /* Mobile Responsive Adjustments */
-  /* Keep circle video in same relative spot in fullscreen (mobile) */
-@media (max-width: 768px) {
-  .player-wrapper:fullscreen .face-video-wrapper {
-    position: absolute !important;
-    top: 5% !important;        /* adjust relative to video height */
-    right: 5% !important;      /* adjust relative to video width */
-    bottom: auto !important;
-    left: auto !important;
-    width: 25% !important;     /* stays proportional */
-    height: auto !important;
-    aspect-ratio: 1 / 1 !important;
-    transform: none !important;
-  }
-}
-
-
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      .custom-controls { padding: 4px; }
+      .custom-controls svg { width: 20px; height: 20px; }
+      .custom-controls button { padding: 4px; }
+      #time-display { font-size: 0.75rem; min-width: 70px; white-space: nowrap; }
+      #progress-bar { margin: 0 6px; }
+      #video-cta-button { top: 0.5rem; right: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; }
+      #end-screen-cta-button { padding: 0.75rem 1.5rem; font-size: 1rem; }
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
-
   <header class="bg-white shadow-md">
     <div class="max-w-7xl mx-auto flex items-center justify-center px-6 py-4">
       <a href="/" class="flex items-center">
@@ -239,37 +196,45 @@
   <main class="py-12">
     <div class="max-w-4xl mx-auto px-6 text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
-      
+
       <div class="player-wrapper mt-8" id="playerWrapper">
         <a href="#calendar-section" id="video-cta-button">Book a Call</a>
+
         <div class="video-player-container" id="myCustomPlayer">
           <video class="screen-video-visual" id="screenVideo" playsinline muted preload="none" style="display:none;"></video>
+
           <div class="face-video-wrapper" id="faceWrapper">
             <video class="face-video-visual" id="faceVideo" playsinline muted preload="none" style="display:none;"></video>
           </div>
+
           <div class="thumbnail-overlay" id="thumbnailOverlay">
             <img class="video-thumbnail" id="thumbnail" alt="Video Thumbnail">
           </div>
+
           <div class="custom-controls" id="customControls">
             <button id="playPauseBtn">
               <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
               <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
             </button>
+
             <button id="muteBtn">
-                <svg class="volume-on-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
-                <svg class="volume-off-icon" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.1 15.34 21 13.77 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
+              <svg class="volume-on-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+              <svg class="volume-off-icon" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.1 15.34 21 13.77 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
             </button>
+
             <input type="range" id="progress-bar" value="0" step="0.1">
             <span id="time-display">00:00 / 00:00</span>
+
             <button id="fullscreenBtn">
               <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"></path></svg>
             </button>
           </div>
+
           <div id="video-end-screen">
             <button id="end-screen-cta-button">Book a Call</button>
             <button id="replay-button">
-                <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
-                Replay
+              <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
+              Replay
             </button>
           </div>
         </div>
@@ -278,14 +243,15 @@
 
     <div id="calendar-section" class="max-w-4xl mx-auto px-6 text-center mt-16">
       <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Ready to Grow? Book Your Free Strategy Call</h2>
+
       <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md h-[700px]">
         <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-growthcall"></div>
         <script type="text/javascript">
-          (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-        Cal("init", "growthcall", {origin:"https://app.cal.com"});
-          Cal.ns.growthcall("inline", { elementOrSelector:"#my-cal-inline-growthcall", config: {"layout":"month_view","theme":"light"}, calLink: "introscale/growthcall" });
-          Cal.ns.growthcall("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#1E88E5"}},"hideEventTypeDetails":false,"layout":"month_view"});
-          </script>
+          (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+          Cal("init", "growthcall", {origin:"https://app.cal.com"});
+          Cal.ns.growthcall("inline", { elementOrSelector:"#my-cal-inline-growthcall", config: {"layout":"month_view","theme":"light"}, calLink: "introscale/growthcall" });
+          Cal.ns.growthcall("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#1E88E5"}},"hideEventTypeDetails":false,"layout":"month_view"});
+        </script>
       </div>
     </div>
   </main>
@@ -312,112 +278,100 @@
   </footer>
 
   <script>
-    const playerWrapper = document.getElementById('playerWrapper');
+    const playerWrapper   = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
-    const screenVideo = document.getElementById('screenVideo');
-    const faceVideo = document.getElementById('faceVideo');
-    const faceWrapper = document.getElementById('faceWrapper');
-    const thumbnailOverlay = document.getElementById('thumbnailOverlay');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const muteBtn = document.getElementById('muteBtn');
-    const progressBar = document.getElementById('progress-bar');
-    const timeDisplay = document.getElementById('time-display');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const videoCtaButton = document.getElementById('video-cta-button');
+    const screenVideo     = document.getElementById('screenVideo');
+    const faceVideo       = document.getElementById('faceVideo');
+    const faceWrapper     = document.getElementById('faceWrapper');
+    const thumbnailOverlay= document.getElementById('thumbnailOverlay');
+    const playPauseBtn    = document.getElementById('playPauseBtn');
+    const muteBtn         = document.getElementById('muteBtn');
+    const progressBar     = document.getElementById('progress-bar');
+    const timeDisplay     = document.getElementById('time-display');
+    const fullscreenBtn   = document.getElementById('fullscreenBtn');
+    const videoCtaButton  = document.getElementById('video-cta-button');
     const calendarSection = document.getElementById('calendar-section');
-    const videoEndScreen = document.getElementById('video-end-screen');
+    const videoEndScreen  = document.getElementById('video-end-screen');
     const endScreenCtaButton = document.getElementById('end-screen-cta-button');
-    const replayButton = document.getElementById('replay-button');
-    
+    const replayButton    = document.getElementById('replay-button');
+
     screenVideo.src = "{{SCREEN_VIDEO_URL}}";
-    faceVideo.src = "{{FACE_VIDEO_URL}}";
+    faceVideo.src   = "{{FACE_VIDEO_URL}}";
     document.getElementById('thumbnail').src = "{{THUMBNAIL_URL}}";
-    
+
     let hasBeenStarted = false;
     let controlsTimeout;
     let screenVideoHasEnded = false;
 
-    if (faceVideo.muted) {
-        playerWrapper.classList.add('muted');
-    }
+    if (faceVideo.muted) playerWrapper.classList.add('muted');
 
     function formatTime(time) {
       const minutes = Math.floor(time / 60);
       const seconds = Math.floor(time % 60);
       return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
-    
-    function togglePlayPause() {
-        if (hasBeenStarted) {
-            if (faceVideo.paused) {
-                faceVideo.play();
-            } else {
-                faceVideo.pause();
-            }
-        }
-    }
 
+    function togglePlayPause() {
+      if (!hasBeenStarted) return;
+      if (faceVideo.paused) faceVideo.play(); else faceVideo.pause();
+    }
 
     function toggleMute() {
-        faceVideo.muted = !faceVideo.muted;
-        screenVideo.muted = !screenVideo.muted;
-        playerWrapper.classList.toggle('muted', faceVideo.muted);
+      faceVideo.muted = !faceVideo.muted;
+      screenVideo.muted = !screenVideo.muted;
+      playerWrapper.classList.toggle('muted', faceVideo.muted);
     }
-    
+
     thumbnailOverlay.addEventListener('click', () => {
-      if (!hasBeenStarted) {
-        hasBeenStarted = true;
-        playerWrapper.classList.add('video-active');
-        faceVideo.muted = false;
-        playerWrapper.classList.remove('muted');
-        screenVideo.style.display = "block";
-        faceVideo.style.display = "block";
-        faceWrapper.style.display = "block";
-        thumbnailOverlay.style.display = "none";
-        videoEndScreen.style.display = "none";
-        togglePlayPause();
-      }
+      if (hasBeenStarted) return;
+      hasBeenStarted = true;
+      playerWrapper.classList.add('video-active');
+      faceVideo.muted = false;
+      playerWrapper.classList.remove('muted');
+
+      screenVideo.style.display = "block";
+      faceVideo.style.display = "block";
+      faceWrapper.style.display = "block";
+      thumbnailOverlay.style.display = "none";
+      videoEndScreen.style.display = "none";
+      togglePlayPause();
     });
-    
+
     faceVideo.addEventListener('loadedmetadata', () => {
       progressBar.max = faceVideo.duration;
       timeDisplay.textContent = `00:00 / ${formatTime(faceVideo.duration)}`;
+      updateFaceOverlayPosition(); // in case fullscreen already happened
     });
-    
+
     faceVideo.addEventListener('play', () => {
       playerWrapper.classList.add('playing');
       playerWrapper.classList.remove('paused');
       videoCtaButton.style.display = 'block';
-      if (!screenVideoHasEnded) {
-        screenVideo.play();
-      }
+      if (!screenVideoHasEnded) screenVideo.play();
     });
-    
+
     faceVideo.addEventListener('pause', () => {
       playerWrapper.classList.remove('playing');
       playerWrapper.classList.add('paused');
       screenVideo.pause();
     });
-    
+
     faceVideo.addEventListener('timeupdate', () => {
-        const currentTime = faceVideo.currentTime;
-        const duration = faceVideo.duration;
+      const currentTime = faceVideo.currentTime;
+      const duration = faceVideo.duration;
 
-        if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
-            screenVideoHasEnded = true;
-            screenVideo.pause();
-        }
+      if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
+        screenVideoHasEnded = true;
+        screenVideo.pause();
+      }
+      if (!screenVideoHasEnded) screenVideo.currentTime = currentTime;
 
-        if (!screenVideoHasEnded) {
-            screenVideo.currentTime = currentTime;
-        }
-      
-        progressBar.value = currentTime;
-        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-        const progressPercent = (currentTime / duration) * 100;
-        progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+      progressBar.value = currentTime;
+      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+      const progressPercent = (currentTime / duration) * 100;
+      progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
     });
-    
+
     faceVideo.addEventListener('ended', () => {
       calendarSection.scrollIntoView({ behavior: 'smooth' });
       playerWrapper.classList.remove('playing');
@@ -425,7 +379,7 @@
       videoCtaButton.style.display = 'none';
       videoEndScreen.style.display = 'flex';
     });
-    
+
     playPauseBtn.addEventListener('click', togglePlayPause);
     muteBtn.addEventListener('click', toggleMute);
 
@@ -434,21 +388,19 @@
         togglePlayPause();
       }
     });
-    
+
     progressBar.addEventListener('input', () => {
-        const newTime = parseFloat(progressBar.value);
-        faceVideo.currentTime = newTime;
-        if (newTime < screenVideo.duration) {
-            screenVideo.currentTime = newTime;
-            if (screenVideoHasEnded) {
-                screenVideoHasEnded = false;
-                if (!faceVideo.paused) {
-                    screenVideo.play();
-                }
-            }
+      const newTime = parseFloat(progressBar.value);
+      faceVideo.currentTime = newTime;
+      if (newTime < screenVideo.duration) {
+        screenVideo.currentTime = newTime;
+        if (screenVideoHasEnded) {
+          screenVideoHasEnded = false;
+          if (!faceVideo.paused) screenVideo.play();
         }
+      }
     });
-    
+
     fullscreenBtn.addEventListener('click', () => {
       if (!document.fullscreenElement) {
         playerWrapper.requestFullscreen();
@@ -458,56 +410,124 @@
     });
 
     const scrollToCalendar = () => {
-        calendarSection.scrollIntoView({ behavior: 'smooth' });
+      calendarSection.scrollIntoView({ behavior: 'smooth' });
     };
-
     videoCtaButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        togglePlayPause();
-
-        if (document.fullscreenElement) {
-            const onFullscreenChange = () => {
-                if (!document.fullscreenElement) {
-                    scrollToCalendar();
-                    document.removeEventListener('fullscreenchange', onFullscreenChange);
-                }
-            };
-            document.addEventListener('fullscreenchange', onFullscreenChange);
-            document.exitFullscreen();
-        } else {
+      event.preventDefault();
+      togglePlayPause();
+      if (document.fullscreenElement) {
+        const onFullscreenChange = () => {
+          if (!document.fullscreenElement) {
             scrollToCalendar();
-        }
+            document.removeEventListener('fullscreenchange', onFullscreenChange);
+          }
+        };
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.exitFullscreen();
+      } else {
+        scrollToCalendar();
+      }
     });
-
     endScreenCtaButton.addEventListener('click', scrollToCalendar);
-
     replayButton.addEventListener('click', () => {
-        videoEndScreen.style.display = 'none';
-        faceVideo.currentTime = 0;
-        screenVideo.currentTime = 0;
-        screenVideoHasEnded = false;
-        togglePlayPause();
+      videoEndScreen.style.display = 'none';
+      faceVideo.currentTime = 0;
+      screenVideo.currentTime = 0;
+      screenVideoHasEnded = false;
+      togglePlayPause();
     });
 
     // Interactive controls logic
     playerWrapper.addEventListener('mousemove', () => {
-        playerWrapper.classList.add('controls-visible');
+      playerWrapper.classList.add('controls-visible');
+      clearTimeout(controlsTimeout);
+      controlsTimeout = setTimeout(() => {
+        if (!faceVideo.paused) playerWrapper.classList.remove('controls-visible');
+      }, 3000);
+    });
+    playerWrapper.addEventListener('mouseleave', () => {
+      if (!faceVideo.paused) {
         clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(() => {
-            if (!faceVideo.paused) {
-                playerWrapper.classList.remove('controls-visible');
-            }
-        }, 3000);
+        playerWrapper.classList.remove('controls-visible');
+      }
     });
 
-    playerWrapper.addEventListener('mouseleave', () => {
-        if (!faceVideo.paused) {
-            clearTimeout(controlsTimeout);
-            playerWrapper.classList.remove('controls-visible');
-        }
-    });
+    /* -----------------------------
+       MOBILE FULLSCREEN OVERLAY LOCK
+       Keep the circle at bottom-right of the *video content* (not black bars)
+       ----------------------------- */
+    function isMobile() {
+      return window.matchMedia('(max-width: 768px)').matches;
+    }
+
+    function resetFaceOverlayPosition() {
+      // Clear inline overrides to fall back to CSS (site view + desktop)
+      faceWrapper.style.right   = '';
+      faceWrapper.style.bottom  = '';
+      faceWrapper.style.left    = '';
+      faceWrapper.style.top     = '';
+      faceWrapper.style.width   = '';
+      faceWrapper.style.height  = '';
+      faceWrapper.style.transform = '';
+    }
+
+    function updateFaceOverlayPosition() {
+      // Only adjust in mobile + fullscreen
+      if (!isMobile() || !document.fullscreenElement) {
+        resetFaceOverlayPosition();
+        return;
+      }
+
+      // Use screenVideo's intrinsic aspect for accurate letterboxing
+      const vw = screenVideo.videoWidth  || 1920; // fallback to 16:9
+      const vh = screenVideo.videoHeight || 1080;
+      const videoAspect = vw / vh;
+
+      const rect = playerContainer.getBoundingClientRect();
+      const cw = rect.width;
+      const ch = rect.height;
+      const containerAspect = cw / ch;
+
+      // Compute content box size within the container (object-fit: contain)
+      let contentW, contentH, offsetX = 0, offsetY = 0;
+      if (containerAspect > videoAspect) {
+        // container wider: full height used, pillarbox left/right
+        contentH = ch;
+        contentW = ch * videoAspect;
+        offsetX = (cw - contentW) / 2;
+        offsetY = 0;
+      } else {
+        // container taller: full width used, letterbox top/bottom
+        contentW = cw;
+        contentH = cw / videoAspect;
+        offsetX = 0;
+        offsetY = (ch - contentH) / 2;
+      }
+
+      // Position the circle *inside* the content box, bottom-right with some padding
+      const padX = contentW * 0.02; // 2% horizontal padding inside content
+      const padY = contentH * 0.05; // 5% vertical padding inside content
+
+      // Size the circle relative to content width (keeps proportions in both orientations)
+      const circleW = contentW * 0.20; // 20% of visible video width
+
+      faceWrapper.style.left   = 'auto';
+      faceWrapper.style.top    = 'auto';
+      faceWrapper.style.width  = `${circleW}px`;
+      faceWrapper.style.height = 'auto';
+
+      // Use right/bottom from the container edges, adding the letterbox offsets
+      faceWrapper.style.right  = `${offsetX + padX}px`;
+      faceWrapper.style.bottom = `${offsetY + padY}px`;
+      faceWrapper.style.transform = 'none';
+    }
+
+    // Recalculate when entering/exiting fullscreen, rotating, resizing, or once video metadata is ready
+    document.addEventListener('fullscreenchange', updateFaceOverlayPosition);
+    window.addEventListener('resize', updateFaceOverlayPosition);
+    window.addEventListener('orientationchange', updateFaceOverlayPosition);
+    screenVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
 
   </script>
 </body>
 </html>
-
