@@ -18,7 +18,6 @@
     }
     .player-wrapper {
       position: relative;
-      --face-video-scale: 0.20; /* 20% of the container width */
     }
     .video-player-container {
       position: relative;
@@ -38,7 +37,7 @@
     }
     .face-video-wrapper {
       z-index: 3;
-      width: calc(100% * var(--face-video-scale));
+      width: 20%;
       height: auto;
       aspect-ratio: 1 / 1;
       border-radius: 9999px;
@@ -49,6 +48,7 @@
       top: auto;
       left: auto;
       display: none;
+      transition: width 0.3s, height 0.3s; /* Smooth transition */
     }
     
     .screen-video-visual, .face-video-visual {
@@ -198,7 +198,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        --face-video-scale: 0.25; /* 25% of the container width in fullscreen */
     }
     .player-wrapper:fullscreen .video-player-container {
         border-radius: 0;
@@ -207,6 +206,14 @@
     }
     .player-wrapper:fullscreen .screen-video-visual {
         object-fit: contain;
+    }
+    .player-wrapper:fullscreen .face-video-wrapper {
+        width: 15vw; /* Use viewport width for scaling in fullscreen */
+        height: 15vw;
+        max-width: 120px; /* Set a max size to prevent it from getting too large */
+        max-height: 120px;
+        bottom: 7%;
+        right: 3%;
     }
 
     /* Mobile Responsive Adjustments */
@@ -451,6 +458,24 @@
         document.exitFullscreen();
       }
     });
+
+    // JAVASCRIPT-BASED SCALING FOR FACE VIDEO IN FULLSCREEN
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            // Entered fullscreen
+            setTimeout(() => {
+                const videoHeight = screenVideo.getBoundingClientRect().height;
+                const newSize = videoHeight * 0.25; // 25% of the video's actual height
+                faceWrapper.style.width = `${newSize}px`;
+                faceWrapper.style.height = `${newSize}px`;
+            }, 100); // Small delay to allow browser to render
+        } else {
+            // Exited fullscreen
+            faceWrapper.style.width = '20%'; // Revert to original percentage
+            faceWrapper.style.height = 'auto';
+        }
+    });
+
 
     const scrollToCalendar = () => {
         calendarSection.scrollIntoView({ behavior: 'smooth' });
