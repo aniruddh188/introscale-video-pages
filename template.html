@@ -285,6 +285,10 @@
   </footer>
 
 <script>
+  // Force pre-buffering for smoother playback
+document.addEventListener("DOMContentLoaded", () => {
+  screenVideo.load(); // start fetching the video file early
+});
     const playerWrapper   = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
     const screenVideo     = document.getElementById('screenVideo');
@@ -560,6 +564,7 @@ faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
   </script>
 </body>
 </html>
+
 
 
 
