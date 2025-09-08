@@ -48,6 +48,7 @@
       top: auto;
       left: auto;
       display: none;
+      transition: width 0.3s, height 0.3s; /* Smooth transition */
     }
     
     .screen-video-visual, .face-video-visual {
@@ -206,15 +207,7 @@
     .player-wrapper:fullscreen .screen-video-visual {
         object-fit: contain;
     }
-    .player-wrapper:fullscreen .face-video-wrapper {
-        width: 18vh; /* Use viewport height for robust scaling */
-        height: 18vh;
-        max-width: 150px; /* Prevent it from becoming too large on desktop */
-        max-height: 150px;
-        bottom: 7%;
-        right: 3%;
-    }
-
+    
     /* Mobile Responsive Adjustments */
     @media (max-width: 480px) {
         .custom-controls {
@@ -457,6 +450,24 @@
         document.exitFullscreen();
       }
     });
+
+    // JAVASCRIPT-BASED SCALING FOR FACE VIDEO IN FULLSCREEN
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            // Entered fullscreen
+            setTimeout(() => {
+                const videoHeight = screenVideo.getBoundingClientRect().height;
+                const newSize = videoHeight * 0.25; // 25% of the video's actual height
+                faceWrapper.style.width = `${newSize}px`;
+                faceWrapper.style.height = `${newSize}px`;
+            }, 100); // Small delay to allow browser to render
+        } else {
+            // Exited fullscreen
+            faceWrapper.style.width = '20%'; // Revert to original percentage
+            faceWrapper.style.height = 'auto';
+        }
+    });
+
 
     const scrollToCalendar = () => {
         calendarSection.scrollIntoView({ behavior: 'smooth' });
