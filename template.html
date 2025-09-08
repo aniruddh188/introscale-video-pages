@@ -37,7 +37,7 @@
     }
     .face-video-wrapper {
       z-index: 3;
-      width: 20%;
+      width: 20%; /* Base size */
       height: auto;
       aspect-ratio: 1 / 1;
       border-radius: 9999px;
@@ -48,7 +48,6 @@
       top: auto;
       left: auto;
       display: none;
-      transition: width 0.3s, height 0.3s; /* Smooth transition */
     }
     
     .screen-video-visual, .face-video-visual {
@@ -195,9 +194,6 @@
     .player-wrapper:fullscreen {
         width: 100%;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
     .player-wrapper:fullscreen .video-player-container {
         border-radius: 0;
@@ -208,12 +204,7 @@
         object-fit: contain;
     }
     .player-wrapper:fullscreen .face-video-wrapper {
-        width: 15vw; /* Use viewport width for scaling in fullscreen */
-        height: 15vw;
-        max-width: 120px; /* Set a max size to prevent it from getting too large */
-        max-height: 120px;
-        bottom: 7%;
-        right: 3%;
+        width: 20%; /* Keep percentage consistent */
     }
 
     /* Mobile Responsive Adjustments */
@@ -458,24 +449,6 @@
         document.exitFullscreen();
       }
     });
-
-    // JAVASCRIPT-BASED SCALING FOR FACE VIDEO IN FULLSCREEN
-    document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) {
-            // Entered fullscreen
-            setTimeout(() => {
-                const videoHeight = screenVideo.getBoundingClientRect().height;
-                const newSize = videoHeight * 0.25; // 25% of the video's actual height
-                faceWrapper.style.width = `${newSize}px`;
-                faceWrapper.style.height = `${newSize}px`;
-            }, 100); // Small delay to allow browser to render
-        } else {
-            // Exited fullscreen
-            faceWrapper.style.width = '20%'; // Revert to original percentage
-            faceWrapper.style.height = 'auto';
-        }
-    });
-
 
     const scrollToCalendar = () => {
         calendarSection.scrollIntoView({ behavior: 'smooth' });
