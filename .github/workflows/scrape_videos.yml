@@ -13,6 +13,10 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
 
+    # --- FIX: Grant the workflow permission to write back to the repository ---
+    permissions:
+      contents: write
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -34,6 +38,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated: Updated videos.json and CSV with final links"
-          # --- FIX: Removed the single quotes around the second filename ---
           file_pattern: "videos.json RepliQ_results.csv"
 
