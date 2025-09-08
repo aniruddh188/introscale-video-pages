@@ -43,7 +43,7 @@
       border-radius: 9999px;
       overflow: hidden;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      bottom: 2%;
+      bottom: 5%; /* Adjusted for better placement with controls */
       right: 2%;
       top: auto;
       left: auto;
@@ -192,9 +192,6 @@
     }
 
     /* Fullscreen Mode Adjustments */
-    .player-wrapper:-webkit-full-screen,
-    .player-wrapper:-moz-full-screen,
-    .player-wrapper:-ms-fullscreen,
     .player-wrapper:fullscreen {
         width: 100%;
         height: 100%;
@@ -211,8 +208,8 @@
         object-fit: contain; /* Ensures full frame is visible, prevents cropping */
     }
     .player-wrapper:fullscreen .face-video-wrapper {
-        width: 15%;
-        bottom: 2%;
+        width: 15%; /* Adjust size relative to fullscreen */
+        bottom: 5%; /* Adjust position relative to fullscreen */
         right: 2%;
     }
 
