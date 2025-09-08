@@ -18,7 +18,6 @@
     }
     .player-wrapper {
       position: relative;
-      background-color: #000; /* Set a base background color */
     }
     .video-player-container {
       position: relative;
@@ -199,9 +198,14 @@
     .player-wrapper:fullscreen {
         width: 100%;
         height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     .player-wrapper:fullscreen .video-player-container {
         border-radius: 0;
+        width: 100%;
+        height: 100%;
     }
     .player-wrapper:fullscreen .screen-video-visual {
         object-fit: contain; /* Ensures full frame is visible, prevents cropping */
