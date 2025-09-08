@@ -349,7 +349,7 @@
     
     let hasBeenStarted = false;
     let controlsTimeout;
-    let syncInterval;
+    let screenVideoHasEnded = false;
 
     if (faceVideo.muted) {
         playerWrapper.classList.add('muted');
@@ -362,10 +362,10 @@
     }
     
     function togglePlayPause() {
-        if (hasBeenStarted) {
+        if (hasBeenStarted && !screenVideoHasEnded) { // Only allow play/pause if screen video hasn't ended
             if (faceVideo.paused) {
-                // Use promises to ensure both play actions are attempted
-                Promise.all([faceVideo.play(), screenVideo.play()]).catch(e => console.error("Play failed", e));
+                faceVideo.play();
+                screenVideo.play();
             } else {
                 faceVideo.pause();
                 screenVideo.pause();
@@ -391,7 +391,7 @@
         faceWrapper.style.display = "block";
         thumbnailOverlay.style.display = "none";
         videoEndScreen.style.display = "none";
-        togglePlayPause(); // Use the unified play/pause function
+        togglePlayPause();
       }
     });
     
@@ -401,28 +401,33 @@
     });
     
     faceVideo.addEventListener('play', () => {
-        playerWrapper.classList.add('playing');
-        playerWrapper.classList.remove('paused');
-        videoCtaButton.style.display = 'block';
-        // Start high-frequency sync
-        syncInterval = setInterval(() => {
-            screenVideo.currentTime = faceVideo.currentTime;
-        }, 50); // Sync every 50ms
+      playerWrapper.classList.add('playing');
+      playerWrapper.classList.remove('paused');
+      videoCtaButton.style.display = 'block';
     });
     
     faceVideo.addEventListener('pause', () => {
-        playerWrapper.classList.remove('playing');
-        playerWrapper.classList.add('paused');
-        clearInterval(syncInterval); // Stop sync when paused
+      playerWrapper.classList.remove('playing');
+      playerWrapper.classList.add('paused');
     });
     
     faceVideo.addEventListener('timeupdate', () => {
-      const currentTime = faceVideo.currentTime;
-      const duration = faceVideo.duration;
-      progressBar.value = currentTime;
-      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-      const progressPercent = (currentTime / duration) * 100;
-      progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+        const currentTime = faceVideo.currentTime;
+        const duration = faceVideo.duration;
+
+        if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
+            screenVideoHasEnded = true;
+            screenVideo.pause();
+        }
+
+        if (!screenVideoHasEnded) {
+            screenVideo.currentTime = currentTime;
+        }
+      
+        progressBar.value = currentTime;
+        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        const progressPercent = (currentTime / duration) * 100;
+        progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
     });
     
     faceVideo.addEventListener('ended', () => {
@@ -431,7 +436,6 @@
       playerWrapper.classList.add('paused');
       videoCtaButton.style.display = 'none';
       videoEndScreen.style.display = 'flex';
-      clearInterval(syncInterval);
     });
     
     playPauseBtn.addEventListener('click', togglePlayPause);
@@ -444,11 +448,17 @@
     });
     
     progressBar.addEventListener('input', () => {
-      const newTime = parseFloat(progressBar.value);
-      faceVideo.currentTime = newTime;
-      screenVideo.currentTime = newTime;
-      const progressPercent = (newTime / faceVideo.duration) * 100;
-      progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+        const newTime = parseFloat(progressBar.value);
+        faceVideo.currentTime = newTime;
+        if (newTime < screenVideo.duration) {
+            screenVideo.currentTime = newTime;
+            if (screenVideoHasEnded) {
+                screenVideoHasEnded = false;
+                if (!faceVideo.paused) {
+                    screenVideo.play();
+                }
+            }
+        }
     });
     
     fullscreenBtn.addEventListener('click', () => {
@@ -465,7 +475,7 @@
 
     videoCtaButton.addEventListener('click', (event) => {
         event.preventDefault();
-        togglePlayPause(); // Pause the video
+        togglePlayPause();
 
         if (document.fullscreenElement) {
             const onFullscreenChange = () => {
@@ -487,6 +497,7 @@
         videoEndScreen.style.display = 'none';
         faceVideo.currentTime = 0;
         screenVideo.currentTime = 0;
+        screenVideoHasEnded = false;
         togglePlayPause();
     });
 
