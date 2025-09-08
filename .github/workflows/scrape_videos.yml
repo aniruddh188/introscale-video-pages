@@ -1,1 +1,47 @@
+name: Scrape RepliQ Videos
 
+# This tells the action WHEN to run.
+on:
+  # Trigger the workflow automatically when a change is pushed to the main branch
+  # ONLY if the 'RepliQ results.csv' file was changed.
+  push:
+    branches:
+      - main
+    paths:
+      - 'RepliQ results.csv'
+      
+  # This also allows you to run the workflow manually from the Actions tab on GitHub.
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest # Use a standard Linux virtual machine
+
+    steps:
+      # Step 1: Check out your repository's code so the runner can access it.
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the Python environment.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' # Use a stable version of Python
+
+      # Step 3: Install the necessary Python libraries from a requirements file.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run the Python scraping script.
+      - name: Run the scraping script
+        run: python 1_create_layered_videos_json.py
+
+      # Step 5: Automatically commit the new 'videos.json' and updated CSV back to the repository.
+      - name: Commit and push if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated: Updated videos.json and CSV with final links"
+          # The file pattern now includes both files that need to be saved.
+          file_pattern: "videos.json 'RepliQ results.csv'"
