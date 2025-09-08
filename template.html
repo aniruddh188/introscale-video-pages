@@ -294,10 +294,10 @@
   </footer>
 
 <script>
-  // Force pre-buffering for smoother playback
-document.addEventListener("DOMContentLoaded", () => {
-  screenVideo.load(); // start fetching the video file early
-});
+    // Force pre-buffering for smoother playback
+    document.addEventListener("DOMContentLoaded", () => {
+      screenVideo.load(); // start fetching the video file early
+    });
     const playerWrapper   = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
     const screenVideo     = document.getElementById('screenVideo');
@@ -323,12 +323,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let controlsTimeout;
     let screenVideoHasEnded = false;
 
-    // GA4 Event Tracking: Track progress to prevent sending duplicate events
-    let progressMarkers = {
-      '25': false,
-      '50': false,
-      '75': false
-    };
+    // GA4 Event Tracking
+    let lastReportedPercent = -1;
+    let hasScrolledPastVideo = false;
+
 
     if (faceVideo.muted) playerWrapper.classList.add('muted');
 
@@ -353,10 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hasBeenStarted) return;
       hasBeenStarted = true;
 
-      // GA4 Event: Send video_start event
       gtag('event', 'video_start', {
-        'video_title': '{{PROSPECT_NAME}}',
-        'video_url': faceVideo.src
+        'prospect_name': '{{PROSPECT_NAME}}'
       });
 
       playerWrapper.classList.add('video-active');
@@ -374,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
     faceVideo.addEventListener('loadedmetadata', () => {
       progressBar.max = faceVideo.duration;
       timeDisplay.textContent = `00:00 / ${formatTime(faceVideo.duration)}`;
-      updateFaceOverlayPosition(); // in case fullscreen already happened
+      updateFaceOverlayPosition();
     });
 
     faceVideo.addEventListener('play', () => {
@@ -393,52 +389,24 @@ document.addEventListener("DOMContentLoaded", () => {
     faceVideo.addEventListener('timeupdate', () => {
       const currentTime = faceVideo.currentTime;
       const duration = faceVideo.duration;
-      const percentWatched = (currentTime / duration) * 100;
-
-      // GA4 Event: Track progress
-      if (percentWatched >= 25 && !progressMarkers['25']) {
-          progressMarkers['25'] = true;
-          gtag('event', 'video_progress', {
-              'video_title': '{{PROSPECT_NAME}}',
-              'video_url': faceVideo.src,
-              'video_percent': 25
-          });
-      }
-      if (percentWatched >= 50 && !progressMarkers['50']) {
-          progressMarkers['50'] = true;
-          gtag('event', 'video_progress', {
-              'video_title': '{{PROSPECT_NAME}}',
-              'video_url': faceVideo.src,
-              'video_percent': 50
-          });
-      }
-      if (percentWatched >= 75 && !progressMarkers['75']) {
-          progressMarkers['75'] = true;
-          gtag('event', 'video_progress', {
-              'video_title': '{{PROSPECT_NAME}}',
-              'video_url': faceVideo.src,
-              'video_percent': 75
-          });
-      }
-
-
+      
       if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
         screenVideoHasEnded = true;
         screenVideo.pause();
       }
       if (!screenVideoHasEnded) screenVideo.currentTime = currentTime;
-
+      
       progressBar.value = currentTime;
       timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
       const progressPercent = (currentTime / duration) * 100;
       progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+      
+      trackProgressBarChange();
     });
 
     faceVideo.addEventListener('ended', () => {
-      // GA4 Event: Send video_complete event
       gtag('event', 'video_complete', {
-        'video_title': '{{PROSPECT_NAME}}',
-        'video_url': faceVideo.src
+        'prospect_name': '{{PROSPECT_NAME}}'
       });
 
       calendarSection.scrollIntoView({ behavior: 'smooth' });
@@ -457,6 +425,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    function trackProgressBarChange() {
+        const duration = faceVideo.duration;
+        if (isNaN(duration) || duration === 0) return;
+
+        const currentPercent = Math.floor((progressBar.value / duration) * 100);
+
+        if (currentPercent > lastReportedPercent) {
+            lastReportedPercent = currentPercent;
+            gtag('event', 'video_progress', {
+                'prospect_name': '{{PROSPECT_NAME}}',
+                'video_percent': currentPercent
+            });
+        }
+    }
+
     progressBar.addEventListener('input', () => {
       const newTime = parseFloat(progressBar.value);
       faceVideo.currentTime = newTime;
@@ -467,7 +450,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!faceVideo.paused) screenVideo.play();
         }
       }
+      trackProgressBarChange();
     });
+
 
     fullscreenBtn.addEventListener('click', () => {
       if (!document.fullscreenElement) {
@@ -477,12 +462,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Updated CTA Button Click Tracking
     const scrollToCalendar = (eventSource) => {
-        // GA4 Event: Send book_call_click event
         gtag('event', 'book_call_click', {
             'prospect_name': '{{PROSPECT_NAME}}',
-            'event_source': eventSource // 'video_cta' or 'end_screen_cta'
+            'event_source': eventSource
         });
       calendarSection.scrollIntoView({ behavior: 'smooth' });
     };
@@ -513,16 +496,23 @@ document.addEventListener("DOMContentLoaded", () => {
       faceVideo.currentTime = 0;
       screenVideo.currentTime = 0;
       screenVideoHasEnded = false;
-      
-      // Reset progress markers for replayed video
-      progressMarkers['25'] = false;
-      progressMarkers['50'] = false;
-      progressMarkers['75'] = false;
+      lastReportedPercent = -1;
 
       togglePlayPause();
     });
 
-    // Interactive controls logic
+    window.addEventListener('scroll', () => {
+        if (hasScrolledPastVideo) return; 
+
+        const playerBottom = playerWrapper.getBoundingClientRect().bottom;
+        if (playerBottom < 0) {
+            hasScrolledPastVideo = true;
+            gtag('event', 'scroll_to_calendar', {
+                'prospect_name': '{{PROSPECT_NAME}}'
+            });
+        }
+    });
+
     playerWrapper.addEventListener('mousemove', () => {
       playerWrapper.classList.add('controls-visible');
       clearTimeout(controlsTimeout);
@@ -537,16 +527,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    /* -----------------------------
-       MOBILE FULLSCREEN OVERLAY LOCK
-       Keep the circle at bottom-right of the *video content* (not black bars)
-       ----------------------------- */
     function isMobile() {
       return window.matchMedia('(max-width: 768px)').matches;
     }
 
     function resetFaceOverlayPosition() {
-      // Clear inline overrides to fall back to CSS (site view + desktop)
       faceWrapper.style.right   = '';
       faceWrapper.style.bottom  = '';
       faceWrapper.style.left    = '';
@@ -556,85 +541,62 @@ document.addEventListener("DOMContentLoaded", () => {
       faceWrapper.style.transform = '';
     }
 
-function updateFaceOverlayPosition() {
-  // Only adjust in mobile + fullscreen
-  if (!isMobile() || !document.fullscreenElement) {
-    resetFaceOverlayPosition();
-    return;
-  }
+    function updateFaceOverlayPosition() {
+      if (!isMobile() || !document.fullscreenElement) {
+        resetFaceOverlayPosition();
+        return;
+      }
+      const vw = screenVideo.videoWidth  || 1920; 
+      const vh = screenVideo.videoHeight || 1080;
+      const videoAspect = vw / vh;
+      const rect = playerContainer.getBoundingClientRect();
+      const cw = rect.width;
+      const ch = rect.height;
+      const containerAspect = cw / ch;
+      let contentW, contentH, offsetX = 0, offsetY = 0;
+      if (containerAspect > videoAspect) {
+        contentH = ch;
+        contentW = ch * videoAspect;
+        offsetX = (cw - contentW) / 2;
+      } else {
+        contentW = cw;
+        contentH = cw / videoAspect;
+        offsetY = (ch - contentH) / 2;
+      }
+      const padX = contentW * 0.02;
+      const padY = contentH * 0.05;
+      const circleW = contentW * 0.20;
+      faceWrapper.style.width  = `${circleW}px`;
+      faceWrapper.style.height = `${circleW}px`;
+      faceWrapper.style.left   = `${offsetX + contentW - circleW - padX}px`;
+      faceWrapper.style.top    = `${offsetY + contentH - circleW - padY}px`;
+      faceWrapper.style.right  = 'auto';
+      faceWrapper.style.bottom = 'auto';
+      faceWrapper.style.transform = 'none';
+      adjustForLandscape();
+    }
 
-  const vw = screenVideo.videoWidth  || 1920; 
-  const vh = screenVideo.videoHeight || 1080;
-  const videoAspect = vw / vh;
+    function adjustForLandscape() {
+      if (!isMobile() || !document.fullscreenElement) return;
+      if (window.innerWidth > window.innerHeight) {
+        const currentRight = parseFloat(faceWrapper.style.right) || 0;
+        faceWrapper.style.right = `${currentRight + 40}px`;
+      }
+    }
 
-  const rect = playerContainer.getBoundingClientRect();
-  const cw = rect.width;
-  const ch = rect.height;
-  const containerAspect = cw / ch;
-
-  let contentW, contentH, offsetX = 0, offsetY = 0;
-  if (containerAspect > videoAspect) {
-    contentH = ch;
-    contentW = ch * videoAspect;
-    offsetX = (cw - contentW) / 2;
-  } else {
-    contentW = cw;
-    contentH = cw / videoAspect;
-    offsetY = (ch - contentH) / 2;
-  }
-
-  const padX = contentW * 0.02;
-  const padY = contentH * 0.05;
-
-  const circleW = contentW * 0.20;
-
-  faceWrapper.style.width  = `${circleW}px`;
-  faceWrapper.style.height = `${circleW}px`; // square
-  faceWrapper.style.left   = `${offsetX + contentW - circleW - padX}px`;
-  faceWrapper.style.top    = `${offsetY + contentH - circleW - padY}px`;
-  faceWrapper.style.right  = 'auto';
-  faceWrapper.style.bottom = 'auto';
-  faceWrapper.style.transform = 'none';
-
-  // 👉 Add this call
-  adjustForLandscape();
-}
-
-function adjustForLandscape() {
-  if (!isMobile() || !document.fullscreenElement) return;
-
-  // Check if device is in landscape
-  if (window.innerWidth > window.innerHeight) {
-    // Nudge the circle leftwards in fullscreen landscape
-    const currentRight = parseFloat(faceWrapper.style.right) || 0;
-    faceWrapper.style.right = `${currentRight + 40}px`; // tweak this value
-  }
-}
-
-
-
-    // *** MODIFICATION START ***
     let resizeTimeout;
     function handleResizeOrRotate() {
       clearTimeout(resizeTimeout);
-      // A small delay ensures the viewport dimensions are updated after rotation
       resizeTimeout = setTimeout(updateFaceOverlayPosition, 150);
     }
 
-// Recalculate on fullscreen toggle, resize, and orientation change
-document.addEventListener('fullscreenchange', updateFaceOverlayPosition);
-window.addEventListener('resize', updateFaceOverlayPosition);
-
-// Orientation on mobile can lag — force recalculation with a small delay
-window.addEventListener('orientationchange', () => {
-  setTimeout(updateFaceOverlayPosition, 300);
-});
-
-// Also recalc when videos load (face + screen)
-screenVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
-faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
-
-
-  </script>
+    document.addEventListener('fullscreenchange', updateFaceOverlayPosition);
+    window.addEventListener('resize', updateFaceOverlayPosition);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateFaceOverlayPosition, 300);
+    });
+    screenVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
+    faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
+</script>
 </body>
 </html>
