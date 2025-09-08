@@ -207,8 +207,10 @@
         object-fit: contain;
     }
     .player-wrapper:fullscreen .face-video-wrapper {
-        width: 15%; /* FINAL FIX: Use percentage to scale with parent */
-        height: auto;
+        width: 18vh; /* Use viewport height for robust scaling */
+        height: 18vh;
+        max-width: 150px; /* Prevent it from becoming too large on desktop */
+        max-height: 150px;
         bottom: 7%;
         right: 3%;
     }
