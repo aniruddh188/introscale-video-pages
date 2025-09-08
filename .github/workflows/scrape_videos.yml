@@ -1,16 +1,11 @@
-name: Scrape RepliQ Videos
+name: Sync Google Sheet and Scrape Videos
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'RepliQ_results.csv'
-      
+  # This allows you to run the workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
 jobs:
-  scrape:
+  scrape-and-sync:
     runs-on: ubuntu-latest
 
     permissions:
@@ -30,15 +25,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run the scraping script
+      - name: Run the Sync and Scrape script
+        # Pass the secrets to the Python script as environment variables
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
         run: python 1_create_layered_videos_json.py
-
-      # --- NEW: Explicitly stage all new and modified files ---
-      - name: Stage changed files
-        run: git add -A
 
       - name: Commit and push if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Automated: Updated videos.json and CSV with final links"
-
+          commit_message: "Automated: Synced from Google Sheets and updated videos.json"
