@@ -119,7 +119,7 @@
   </header>
 
   <main class="py-12">
-    <div class="max-w-4xl mx-auto px-6 text-center">
+    <div class="max-w-6xl mx-auto px-6 text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="player-wrapper mt-8" id="playerWrapper">
@@ -151,7 +151,7 @@
       </div>
     </div>
 
-    <div id="calendar-section" class="max-w-4xl mx-auto px-6 text-center mt-16">
+    <div id="calendar-section" class="max-w-6xl mx-auto px-6 text-center mt-16">
       <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Ready to Grow? Book Your Free Strategy Call</h2>
       <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md h-[700px]">
         <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-growthcall"></div>
@@ -170,18 +170,18 @@
   </footer>
 
 <script>
-    const playerWrapper   = document.getElementById('playerWrapper');
+    const playerWrapper    = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
-    const mainVideo       = document.getElementById('mainVideo');
-    const playOverlay     = document.getElementById('play-overlay');
-    const playPauseBtn    = document.getElementById('playPauseBtn');
-    const progressBar     = document.getElementById('progress-bar');
-    const timeDisplay     = document.getElementById('time-display');
-    const videoCtaButton  = document.getElementById('video-cta-button');
+    const mainVideo        = document.getElementById('mainVideo');
+    const playOverlay      = document.getElementById('play-overlay');
+    const playPauseBtn     = document.getElementById('playPauseBtn');
+    const progressBar      = document.getElementById('progress-bar');
+    const timeDisplay      = document.getElementById('time-display');
+    const videoCtaButton   = document.getElementById('video-cta-button');
     const calendarSection = document.getElementById('calendar-section');
-    const videoEndScreen  = document.getElementById('video-end-screen');
+    const videoEndScreen   = document.getElementById('video-end-screen');
     const endScreenCtaButton = document.getElementById('end-screen-cta-button');
-    const replayButton    = document.getElementById('replay-button');
+    const replayButton     = document.getElementById('replay-button');
 
     mainVideo.src = "{{FINAL_VIDEO_URL}}";
     let videoHasStarted = false;
