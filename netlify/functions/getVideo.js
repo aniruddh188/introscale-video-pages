@@ -23,10 +23,9 @@ exports.handler = async (event) => {
 
         // Replace all the placeholders
         htmlTemplate = htmlTemplate.replace(/{{PROSPECT_NAME}}/g, prospectInfo.prospectName);
-        htmlTemplate = htmlTemplate.replace('{{SCREEN_VIDEO_URL}}', prospectInfo.screenVideoUrl);
-        htmlTemplate = htmlTemplate.replace('{{FACE_VIDEO_URL}}', prospectInfo.faceVideoUrl);
+        htmlTemplate = htmlTemplate.replace('{{FINAL_VIDEO_URL}}', prospectInfo.finalVideoUrl);
         htmlTemplate = htmlTemplate.replace('{{THUMBNAIL_URL}}', prospectInfo.thumbnailUrl);
-        
+
         return {
             statusCode: 200,
             body: htmlTemplate,
