@@ -5,7 +5,6 @@ exports.handler = async (event) => {
     try {
         const videoId = event.path.split('/').pop();
 
-        // --- FIX: The path now points to the file in the SAME directory ---
         const dataPath = path.resolve(__dirname, './videos.json');
         const templatePath = path.resolve(__dirname, '../../template.html');
 
@@ -21,11 +20,11 @@ exports.handler = async (event) => {
             };
         }
 
-        // Replace all the placeholders
         htmlTemplate = htmlTemplate.replace(/{{PROSPECT_NAME}}/g, prospectInfo.prospectName);
         htmlTemplate = htmlTemplate.replace('{{FINAL_VIDEO_URL}}', prospectInfo.finalVideoUrl);
-        htmlTemplate = htmlTemplate.replace('{{THUMBNAIL_URL}}', prospectInfo.thumbnailUrl);
-
+        // --- THIS IS THE NEW LINE ---
+        htmlTemplate = htmlTemplate.replace('{{WEBSITE_URL}}', prospectInfo.websiteUrl || ''); 
+        
         return {
             statusCode: 200,
             body: htmlTemplate,
