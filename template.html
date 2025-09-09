@@ -37,7 +37,7 @@
       width: 100%; height: 100%;
       object-fit: cover;
     }
-    /* Style for the big play button overlay */
+    /* Style for the big play button and shadow overlay */
     #play-overlay {
       position: absolute;
       top: 0; left: 0;
@@ -46,13 +46,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: rgba(0,0,0,0.3);
+      /* --- ADJUSTMENT: Made shadow darker --- */
+      background-color: rgba(0,0,0,0.4);
       cursor: pointer;
       transition: opacity 0.3s ease;
     }
     #play-overlay svg {
-      width: 80px;
-      height: 80px;
+      /* --- ADJUSTMENT: Made play button bigger --- */
+      width: 100px;
+      height: 100px;
       fill: white;
       filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
       transition: transform 0.2s ease;
@@ -60,6 +62,7 @@
     #play-overlay:hover svg {
       transform: scale(1.1);
     }
+    /* This class hides the overlay once the video is active */
     .player-wrapper.video-active #play-overlay {
       opacity: 0;
       pointer-events: none;
@@ -208,12 +211,15 @@
     playOverlay.addEventListener('click', startVideoPlayback);
 
     function togglePlayPause() {
-      // This function only works after the initial play
-      if (!videoHasStarted) return;
-      if (mainVideo.paused) {
-        mainVideo.play();
+      // --- ADJUSTMENT: This now starts the video if it hasn't started ---
+      if (!videoHasStarted) {
+        startVideoPlayback();
       } else {
-        mainVideo.pause();
+        if (mainVideo.paused) {
+          mainVideo.play();
+        } else {
+          mainVideo.pause();
+        }
       }
     }
 
