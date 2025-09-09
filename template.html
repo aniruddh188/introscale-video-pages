@@ -246,6 +246,10 @@
     mainVideo.addEventListener('play', () => {
         if (videoHasStarted) {
             playerWrapper.classList.add('playing');
+            gtag('event', 'video_play', {
+              'event_category': 'Video',
+              'event_label': '{{PROSPECT_NAME}}'
+            });
         }
     });
 
@@ -261,6 +265,15 @@
         const progressPercent = (currentTime / duration) * 100;
         progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
         timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+
+        // Track video progress
+        if (Math.round(currentTime) % 10 === 0) { // Every 10 seconds
+            gtag('event', 'video_progress', {
+                'event_category': 'Video',
+                'event_label': '{{PROSPECT_NAME}}',
+                'value': Math.round(currentTime)
+            });
+        }
       }
     });
 
@@ -275,6 +288,10 @@
         videoCtaButton.style.display = 'none';
         videoEndScreen.style.display = 'flex';
         scrollToCalendar();
+        gtag('event', 'video_ended', {
+          'event_category': 'Video',
+          'event_label': '{{PROSPECT_NAME}}'
+        });
       }
     });
 
@@ -287,9 +304,19 @@
         event.stopPropagation();
         mainVideo.pause();
         scrollToCalendar();
+        gtag('event', 'book_call_click', {
+          'event_category': 'CTA',
+          'event_label': 'In-Video Button'
+        });
     });
     
-    endScreenCtaButton.addEventListener('click', scrollToCalendar);
+    endScreenCtaButton.addEventListener('click',() => {
+        scrollToCalendar();
+        gtag('event', 'book_call_click', {
+          'event_category': 'CTA',
+          'event_label': 'End-Screen Button'
+        });
+    });
 
     replayButton.addEventListener('click', () => {
       videoEndScreen.style.display = 'none';
@@ -307,6 +334,21 @@
           }
         }, 3000);
       }
+    });
+
+    // Scroll tracking
+    let scrollDepthTracked = {};
+    window.addEventListener('scroll', () => {
+        const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+        [25, 50, 75, 90].forEach(depth => {
+            if (scrollPercent >= depth && !scrollDepthTracked[depth]) {
+                scrollDepthTracked[depth] = true;
+                gtag('event', 'scroll_depth', {
+                    'event_category': 'Page Interaction',
+                    'event_label': `${depth}%`
+                });
+            }
+        });
     });
 </script>
 </body>
