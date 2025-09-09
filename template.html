@@ -206,6 +206,10 @@
       }
     }
 
+    const scrollToCalendar = () => {
+      calendarSection.scrollIntoView({ behavior: 'smooth' });
+    };
+
     playerContainer.addEventListener('click', (event) => {
       if (event.target === playerContainer || event.target === mainVideo) {
         togglePlayPause();
@@ -240,19 +244,19 @@
       playerWrapper.classList.remove('playing');
       videoCtaButton.style.display = 'none';
       videoEndScreen.style.display = 'flex';
+      // --- FEATURE: Scroll to calendar when video ends ---
+      scrollToCalendar();
     });
 
     progressBar.addEventListener('input', () => {
       mainVideo.currentTime = progressBar.value;
     });
 
-    const scrollToCalendar = () => {
-      calendarSection.scrollIntoView({ behavior: 'smooth' });
-    };
-
     videoCtaButton.addEventListener('click', (event) => {
-        event.preventDefault(); // prevent link jump
-        event.stopPropagation(); // prevent player pause
+        event.preventDefault(); 
+        event.stopPropagation();
+        // --- FEATURE: Pause video before scrolling ---
+        mainVideo.pause();
         scrollToCalendar();
     });
     
