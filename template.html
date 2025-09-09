@@ -59,6 +59,66 @@
     #playPauseBtn .pause-icon { display: none; }
     .playing #playPauseBtn .play-icon { display: none; }
     .playing #playPauseBtn .pause-icon { display: block; }
+    #progress-bar {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      flex-grow: 1;
+      margin: 0 0.9375rem;
+      cursor: pointer;
+      border-radius: 4px;
+      background: linear-gradient(to right, #2563EB 0%, #2563EB 0%, #555 0%, #555 100%);
+    }
+    #time-display { color: white; font-size: 0.875rem; min-width: 90px; }
+    #video-cta-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 4;
+      display: none;
+      padding: 0.75rem 1.5rem;
+      background-color: #2563EB;
+      color: white;
+      font-weight: 600;
+      border-radius: 9999px;
+      text-decoration: none;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      transition: all 0.2s ease-in-out;
+    }
+    #video-cta-button:hover { background-color: #1D4ED8; transform: scale(1.05); }
+    #video-end-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 7;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #end-screen-cta-button {
+      padding: 1rem 2rem;
+      background-color: #2563EB;
+      color: white;
+      font-size: 1.125rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    #end-screen-cta-button:hover { background-color: #1D4ED8; transform: scale(1.05); }
+    #replay-button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: none; color: white; font-size: 1rem; font-weight: 500;
+      border: none; cursor: pointer; display: flex; align-items: center; opacity: 0.8;
+      transition: opacity 0.2s ease-in-out;
+    }
+    #replay-button:hover { opacity: 1; }
+    #replay-button svg { margin-right: 0.5rem; fill: white; width: 20px; height: 20px; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -75,6 +135,8 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="player-wrapper mt-8" id="playerWrapper">
+        <a href="#calendar-section" id="video-cta-button">Book a Call</a>
+
         <div class="video-player-container" id="myCustomPlayer">
           <video class="video-visual" id="mainVideo" playsinline preload="auto"></video>
           <div class="custom-controls" id="customControls">
@@ -82,13 +144,38 @@
               <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
               <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
             </button>
-            <input type="range" id="progress-bar" value="0" step="0.1" style="width: 100%; margin: 0 1rem;">
+            <input type="range" id="progress-bar" value="0" step="0.1">
             <span id="time-display">00:00 / 00:00</span>
+          </div>
+          <div id="video-end-screen">
+            <button id="end-screen-cta-button">Book a Call</button>
+            <button id="replay-button">
+              <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
+              Replay
+            </button>
           </div>
         </div>
       </div>
     </div>
+
+    <div id="calendar-section" class="max-w-4xl mx-auto px-6 text-center mt-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Ready to Grow? Book Your Free Strategy Call</h2>
+      <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md h-[700px]">
+        <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-growthcall"></div>
+        <script type="text/javascript">
+          (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+          Cal("init", "growthcall", {origin:"https://app.cal.com"});
+          Cal.ns.growthcall("inline", { elementOrSelector:"#my-cal-inline-growthcall", config: {"layout":"month_view","theme":"light"}, calLink: "introscale/growthcall" });
+          Cal.ns.growthcall("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#1E88E5"}},"hideEventTypeDetails":false,"layout":"month_view"});
+        </script>
+      </div>
+    </div>
   </main>
+
+  <footer class="py-6 bg-gray-900 text-gray-400 text-center">
+    <p>&copy; 2025 Introscale. All rights reserved.</p>
+  </footer>
+
 <script>
     const playerWrapper   = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
@@ -96,6 +183,11 @@
     const playPauseBtn    = document.getElementById('playPauseBtn');
     const progressBar     = document.getElementById('progress-bar');
     const timeDisplay     = document.getElementById('time-display');
+    const videoCtaButton  = document.getElementById('video-cta-button');
+    const calendarSection = document.getElementById('calendar-section');
+    const videoEndScreen  = document.getElementById('video-end-screen');
+    const endScreenCtaButton = document.getElementById('end-screen-cta-button');
+    const replayButton    = document.getElementById('replay-button');
 
     mainVideo.src = "{{FINAL_VIDEO_URL}}";
 
@@ -114,16 +206,16 @@
       }
     }
 
-    // --- FIX: Added this click listener back ---
     playerContainer.addEventListener('click', (event) => {
-      // Ensure the click is on the video area, not the controls
       if (event.target === playerContainer || event.target === mainVideo) {
         togglePlayPause();
       }
     });
+    playPauseBtn.addEventListener('click', togglePlayPause);
 
     mainVideo.addEventListener('play', () => {
       playerWrapper.classList.add('playing');
+      videoCtaButton.style.display = 'block';
     });
 
     mainVideo.addEventListener('pause', () => {
@@ -131,19 +223,45 @@
     });
 
     mainVideo.addEventListener('timeupdate', () => {
-      progressBar.value = mainVideo.currentTime;
-      const progressPercent = (mainVideo.currentTime / mainVideo.duration) * 100;
+      const currentTime = mainVideo.currentTime;
+      const duration = mainVideo.duration;
+      progressBar.value = currentTime;
+      const progressPercent = (currentTime / duration) * 100;
       progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
-      timeDisplay.textContent = `${formatTime(mainVideo.currentTime)} / ${formatTime(mainVideo.duration)}`;
+      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
     });
 
     mainVideo.addEventListener('loadedmetadata', () => {
       progressBar.max = mainVideo.duration;
       timeDisplay.textContent = `00:00 / ${formatTime(mainVideo.duration)}`;
     });
+    
+    mainVideo.addEventListener('ended', () => {
+      playerWrapper.classList.remove('playing');
+      videoCtaButton.style.display = 'none';
+      videoEndScreen.style.display = 'flex';
+    });
 
     progressBar.addEventListener('input', () => {
       mainVideo.currentTime = progressBar.value;
+    });
+
+    const scrollToCalendar = () => {
+      calendarSection.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    videoCtaButton.addEventListener('click', (event) => {
+        event.preventDefault(); // prevent link jump
+        event.stopPropagation(); // prevent player pause
+        scrollToCalendar();
+    });
+    
+    endScreenCtaButton.addEventListener('click', scrollToCalendar);
+
+    replayButton.addEventListener('click', () => {
+      videoEndScreen.style.display = 'none';
+      mainVideo.currentTime = 0;
+      mainVideo.play();
     });
 
     let controlsTimeout;
