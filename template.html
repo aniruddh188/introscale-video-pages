@@ -185,6 +185,7 @@
 
     mainVideo.src = "{{FINAL_VIDEO_URL}}";
     let videoHasStarted = false;
+    let controlsTimeout;
 
     function formatTime(time) {
       if (isNaN(time)) return "00:00";
@@ -203,9 +204,18 @@
         mainVideo.currentTime = 0;
         mainVideo.play();
 
-        // --- FIX: Show controls and set play button state on first play ---
+        // --- FIX: Logic moved from 'play' event listener to here ---
         playerWrapper.classList.add('playing');
+        videoCtaButton.style.display = 'block';
         playerWrapper.classList.add('controls-visible');
+
+        // Start timer to hide controls
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+            if (!mainVideo.paused) {
+                playerWrapper.classList.remove('controls-visible');
+            }
+        }, 3000);
     }
     
     playOverlay.addEventListener('click', startVideoPlayback);
@@ -236,7 +246,6 @@
     mainVideo.addEventListener('play', () => {
         if (videoHasStarted) {
             playerWrapper.classList.add('playing');
-            videoCtaButton.style.display = 'block';
         }
     });
 
@@ -288,7 +297,6 @@
       mainVideo.play();
     });
 
-    let controlsTimeout;
     playerWrapper.addEventListener('mousemove', () => {
       if (videoHasStarted) {
         playerWrapper.classList.add('controls-visible');
