@@ -34,40 +34,20 @@
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    .screen-video-visual, .face-video-wrapper {
+    .video-visual {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
       pointer-events: none;
-    }
-
-    .face-video-wrapper {
-      z-index: 3;
-      width: 20%;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      border-radius: 9999px;
-      overflow: hidden;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      bottom: 5%;
-      right: 2%;
-      top: auto;
-      left: auto;
-      display: none;
-    }
-
-    .screen-video-visual, .face-video-visual {
       object-fit: cover;
-      width: 100%;
-      height: 100%;
     }
-    /* Performance tweaks for smoother playback */
-.screen-video-visual {
-  transform: translateZ(0); /* force GPU acceleration */
-  will-change: transform;   /* hint browser to optimize */
-  image-rendering: optimizeSpeed; /* prefer speed over quality */
-}
 
+    /* Performance tweaks for smoother playback */
+    .video-visual {
+      transform: translateZ(0); /* force GPU acceleration */
+      will-change: transform;   /* hint browser to optimize */
+      image-rendering: optimizeSpeed; /* prefer speed over quality */
+    }
 
     .thumbnail-overlay {
       position: absolute;
@@ -185,8 +165,7 @@
     /* Fullscreen tweaks */
     .player-wrapper:fullscreen { width: 100%; height: 100%; }
     .player-wrapper:fullscreen .video-player-container { border-radius: 0; width: 100%; height: 100%; }
-    .player-wrapper:fullscreen .screen-video-visual { object-fit: contain; } /* important for letterbox calc */
-    .player-wrapper:fullscreen .face-video-wrapper { /* base: we'll fine-tune via JS on mobile */ }
+    .player-wrapper:fullscreen .video-visual { object-fit: contain; } /* important for letterbox calc */
 
     /* Mobile responsive */
     @media (max-width: 480px) {
@@ -217,11 +196,7 @@
         <a href="#calendar-section" id="video-cta-button">Book a Call</a>
 
         <div class="video-player-container" id="myCustomPlayer">
-          <video class="screen-video-visual" id="screenVideo" playsinline muted preload="auto" style="display:none;"></video>
-
-          <div class="face-video-wrapper" id="faceWrapper">
-            <video class="face-video-visual" id="faceVideo" playsinline muted preload="none" style="display:none;"></video>
-          </div>
+          <video class="video-visual" id="mainVideo" playsinline muted preload="auto" style="display:none;"></video>
 
           <div class="thumbnail-overlay" id="thumbnailOverlay">
             <img class="video-thumbnail" id="thumbnail" alt="Video Thumbnail">
@@ -296,13 +271,11 @@
 <script>
     // Force pre-buffering for smoother playback
     document.addEventListener("DOMContentLoaded", () => {
-      screenVideo.load(); // start fetching the video file early
+      mainVideo.load(); // start fetching the video file early
     });
     const playerWrapper   = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
-    const screenVideo     = document.getElementById('screenVideo');
-    const faceVideo       = document.getElementById('faceVideo');
-    const faceWrapper     = document.getElementById('faceWrapper');
+    const mainVideo       = document.getElementById('mainVideo');
     const thumbnailOverlay= document.getElementById('thumbnailOverlay');
     const playPauseBtn    = document.getElementById('playPauseBtn');
     const muteBtn         = document.getElementById('muteBtn');
@@ -315,20 +288,18 @@
     const endScreenCtaButton = document.getElementById('end-screen-cta-button');
     const replayButton    = document.getElementById('replay-button');
 
-    screenVideo.src = "{{SCREEN_VIDEO_URL}}";
-    faceVideo.src   = "{{FACE_VIDEO_URL}}";
+    mainVideo.src = "{{FINAL_VIDEO_URL}}";
     document.getElementById('thumbnail').src = "{{THUMBNAIL_URL}}";
 
     let hasBeenStarted = false;
     let controlsTimeout;
-    let screenVideoHasEnded = false;
 
     // GA4 Event Tracking
     let lastReportedPercent = -1;
     let hasScrolledPastVideo = false;
 
 
-    if (faceVideo.muted) playerWrapper.classList.add('muted');
+    if (mainVideo.muted) playerWrapper.classList.add('muted');
 
     function formatTime(time) {
       const minutes = Math.floor(time / 60);
@@ -338,13 +309,12 @@
 
     function togglePlayPause() {
       if (!hasBeenStarted) return;
-      if (faceVideo.paused) faceVideo.play(); else faceVideo.pause();
+      if (mainVideo.paused) mainVideo.play(); else mainVideo.pause();
     }
 
     function toggleMute() {
-      faceVideo.muted = !faceVideo.muted;
-      screenVideo.muted = !screenVideo.muted;
-      playerWrapper.classList.toggle('muted', faceVideo.muted);
+      mainVideo.muted = !mainVideo.muted;
+      playerWrapper.classList.toggle('muted', mainVideo.muted);
     }
 
     thumbnailOverlay.addEventListener('click', () => {
@@ -356,55 +326,44 @@
       });
 
       playerWrapper.classList.add('video-active');
-      faceVideo.muted = false;
+      mainVideo.muted = false;
       playerWrapper.classList.remove('muted');
 
-      screenVideo.style.display = "block";
-      faceVideo.style.display = "block";
-      faceWrapper.style.display = "block";
+      mainVideo.style.display = "block";
       thumbnailOverlay.style.display = "none";
       videoEndScreen.style.display = "none";
       togglePlayPause();
     });
 
-    faceVideo.addEventListener('loadedmetadata', () => {
-      progressBar.max = faceVideo.duration;
-      timeDisplay.textContent = `00:00 / ${formatTime(faceVideo.duration)}`;
-      updateFaceOverlayPosition();
+    mainVideo.addEventListener('loadedmetadata', () => {
+      progressBar.max = mainVideo.duration;
+      timeDisplay.textContent = `00:00 / ${formatTime(mainVideo.duration)}`;
     });
 
-    faceVideo.addEventListener('play', () => {
+    mainVideo.addEventListener('play', () => {
       playerWrapper.classList.add('playing');
       playerWrapper.classList.remove('paused');
       videoCtaButton.style.display = 'block';
-      if (!screenVideoHasEnded) screenVideo.play();
     });
 
-    faceVideo.addEventListener('pause', () => {
+    mainVideo.addEventListener('pause', () => {
       playerWrapper.classList.remove('playing');
       playerWrapper.classList.add('paused');
-      screenVideo.pause();
     });
 
-    faceVideo.addEventListener('timeupdate', () => {
-      const currentTime = faceVideo.currentTime;
-      const duration = faceVideo.duration;
-      
-      if (currentTime >= screenVideo.duration && !screenVideoHasEnded) {
-        screenVideoHasEnded = true;
-        screenVideo.pause();
-      }
-      if (!screenVideoHasEnded) screenVideo.currentTime = currentTime;
-      
+    mainVideo.addEventListener('timeupdate', () => {
+      const currentTime = mainVideo.currentTime;
+      const duration = mainVideo.duration;
+
       progressBar.value = currentTime;
       timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
       const progressPercent = (currentTime / duration) * 100;
       progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
-      
+
       trackProgressBarChange();
     });
 
-    faceVideo.addEventListener('ended', () => {
+    mainVideo.addEventListener('ended', () => {
       gtag('event', 'video_complete', {
         'prospect_name': '{{PROSPECT_NAME}}'
       });
@@ -420,13 +379,13 @@
     muteBtn.addEventListener('click', toggleMute);
 
     playerContainer.addEventListener('click', (event) => {
-      if (hasBeenStarted && (event.target === playerContainer || event.target === screenVideo)) {
+      if (hasBeenStarted && (event.target === playerContainer || event.target === mainVideo)) {
         togglePlayPause();
       }
     });
 
     function trackProgressBarChange() {
-        const duration = faceVideo.duration;
+        const duration = mainVideo.duration;
         if (isNaN(duration) || duration === 0) return;
 
         const currentPercent = Math.floor((progressBar.value / duration) * 100);
@@ -442,14 +401,7 @@
 
     progressBar.addEventListener('input', () => {
       const newTime = parseFloat(progressBar.value);
-      faceVideo.currentTime = newTime;
-      if (newTime < screenVideo.duration) {
-        screenVideo.currentTime = newTime;
-        if (screenVideoHasEnded) {
-          screenVideoHasEnded = false;
-          if (!faceVideo.paused) screenVideo.play();
-        }
-      }
+      mainVideo.currentTime = newTime;
       trackProgressBarChange();
     });
 
@@ -461,7 +413,7 @@
         document.exitFullscreen();
       }
     });
-    
+
     const scrollToCalendar = (eventSource) => {
         gtag('event', 'book_call_click', {
             'prospect_name': '{{PROSPECT_NAME}}',
@@ -486,23 +438,21 @@
         scrollToCalendar('video_cta');
       }
     });
-    
+
     endScreenCtaButton.addEventListener('click', () => {
         scrollToCalendar('end_screen_cta');
     });
 
     replayButton.addEventListener('click', () => {
       videoEndScreen.style.display = 'none';
-      faceVideo.currentTime = 0;
-      screenVideo.currentTime = 0;
-      screenVideoHasEnded = false;
+      mainVideo.currentTime = 0;
       lastReportedPercent = -1;
 
       togglePlayPause();
     });
 
     window.addEventListener('scroll', () => {
-        if (hasScrolledPastVideo) return; 
+        if (hasScrolledPastVideo) return;
 
         const playerBottom = playerWrapper.getBoundingClientRect().bottom;
         if (playerBottom < 0) {
@@ -517,86 +467,15 @@
       playerWrapper.classList.add('controls-visible');
       clearTimeout(controlsTimeout);
       controlsTimeout = setTimeout(() => {
-        if (!faceVideo.paused) playerWrapper.classList.remove('controls-visible');
+        if (!mainVideo.paused) playerWrapper.classList.remove('controls-visible');
       }, 3000);
     });
     playerWrapper.addEventListener('mouseleave', () => {
-      if (!faceVideo.paused) {
+      if (!mainVideo.paused) {
         clearTimeout(controlsTimeout);
         playerWrapper.classList.remove('controls-visible');
       }
     });
-
-    function isMobile() {
-      return window.matchMedia('(max-width: 768px)').matches;
-    }
-
-    function resetFaceOverlayPosition() {
-      faceWrapper.style.right   = '';
-      faceWrapper.style.bottom  = '';
-      faceWrapper.style.left    = '';
-      faceWrapper.style.top     = '';
-      faceWrapper.style.width   = '';
-      faceWrapper.style.height  = '';
-      faceWrapper.style.transform = '';
-    }
-
-    function updateFaceOverlayPosition() {
-      if (!isMobile() || !document.fullscreenElement) {
-        resetFaceOverlayPosition();
-        return;
-      }
-      const vw = screenVideo.videoWidth  || 1920; 
-      const vh = screenVideo.videoHeight || 1080;
-      const videoAspect = vw / vh;
-      const rect = playerContainer.getBoundingClientRect();
-      const cw = rect.width;
-      const ch = rect.height;
-      const containerAspect = cw / ch;
-      let contentW, contentH, offsetX = 0, offsetY = 0;
-      if (containerAspect > videoAspect) {
-        contentH = ch;
-        contentW = ch * videoAspect;
-        offsetX = (cw - contentW) / 2;
-      } else {
-        contentW = cw;
-        contentH = cw / videoAspect;
-        offsetY = (ch - contentH) / 2;
-      }
-      const padX = contentW * 0.02;
-      const padY = contentH * 0.05;
-      const circleW = contentW * 0.20;
-      faceWrapper.style.width  = `${circleW}px`;
-      faceWrapper.style.height = `${circleW}px`;
-      faceWrapper.style.left   = `${offsetX + contentW - circleW - padX}px`;
-      faceWrapper.style.top    = `${offsetY + contentH - circleW - padY}px`;
-      faceWrapper.style.right  = 'auto';
-      faceWrapper.style.bottom = 'auto';
-      faceWrapper.style.transform = 'none';
-      adjustForLandscape();
-    }
-
-    function adjustForLandscape() {
-      if (!isMobile() || !document.fullscreenElement) return;
-      if (window.innerWidth > window.innerHeight) {
-        const currentRight = parseFloat(faceWrapper.style.right) || 0;
-        faceWrapper.style.right = `${currentRight + 40}px`;
-      }
-    }
-
-    let resizeTimeout;
-    function handleResizeOrRotate() {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(updateFaceOverlayPosition, 150);
-    }
-
-    document.addEventListener('fullscreenchange', updateFaceOverlayPosition);
-    window.addEventListener('resize', updateFaceOverlayPosition);
-    window.addEventListener('orientationchange', () => {
-      setTimeout(updateFaceOverlayPosition, 300);
-    });
-    screenVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
-    faceVideo.addEventListener('loadedmetadata', updateFaceOverlayPosition);
 </script>
 </body>
 </html>
