@@ -36,7 +36,7 @@ def scrape_website_url(driver, url):
         script_tag = soup.find('script', id='__NEXT_DATA__')
         if not script_tag:
             print("  - Error: Could not find the __NEXT_DATA__ script tag.")
-            return None
+            return "Website Not Found"
 
         page_data = json.loads(script_tag.string)
         website_url = page_data.get('props', {}).get('pageProps', {}).get('pageData', {}).get('result', [{}])[0].get('websiteUrl')
@@ -46,10 +46,10 @@ def scrape_website_url(driver, url):
             return website_url
 
         print("  - Error: Could not find websiteUrl in the page data.")
-        return "Website Not Found" # Fallback text
+        return "Website Not Found"
     except Exception as e:
         print(f"  - An unexpected error occurred during scraping: {e}")
-        return "Website Not Found" # Fallback text
+        return "Website Not Found"
 
 def main():
     """Main function to sync with Google Sheets, scrape, and write back."""
@@ -84,7 +84,8 @@ def main():
         if not repliq_link or not final_video_link or not company_name:
             continue
 
-        video_id = str(final_video_link).split('/')[-1]
+        # --- CHANGE: Use the ID from the Repliq link ---
+        video_id = str(repliq_link).split('/')[-1]
         print(f"  - Prospect: {company_name} ({video_id})")
 
         website_url = scrape_website_url(driver, repliq_link)
@@ -104,9 +105,10 @@ def main():
     
     final_links = []
     for index, row in df.iterrows():
-        final_video_link = row.get('Final Video Link')
-        if final_video_link and isinstance(final_video_link, str):
-            video_id = final_video_link.split('/')[-1]
+        # --- CHANGE: Use the Repliq link to generate the final URL ---
+        repliq_link = row.get('Repliq Link')
+        if repliq_link and isinstance(repliq_link, str):
+            video_id = repliq_link.split('/')[-1]
             if video_id in videos_data:
                 final_links.append(f"https://video.introscale.com/{video_id}")
             else:
