@@ -37,6 +37,34 @@
       width: 100%; height: 100%;
       object-fit: cover;
     }
+    /* Style for the big play button overlay */
+    #play-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+    #play-overlay svg {
+      width: 80px;
+      height: 80px;
+      fill: white;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+      transition: transform 0.2s ease;
+    }
+    #play-overlay:hover svg {
+      transform: scale(1.1);
+    }
+    .player-wrapper.video-active #play-overlay {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .custom-controls {
       position: absolute;
       bottom: 0; left: 0;
@@ -51,42 +79,24 @@
       transition: opacity 0.3s ease-in-out;
     }
     .player-wrapper.controls-visible .custom-controls { opacity: 1; }
-    .custom-controls button {
-      background: none; border: none; cursor: pointer; padding: 0.3125rem;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .custom-controls svg { fill: white; width: 24px; height: 24px; }
     #playPauseBtn .pause-icon { display: none; }
     .playing #playPauseBtn .play-icon { display: none; }
     .playing #playPauseBtn .pause-icon { display: block; }
     #progress-bar {
       -webkit-appearance: none;
-      appearance: none;
       width: 100%;
       height: 8px;
       flex-grow: 1;
       margin: 0 0.9375rem;
       cursor: pointer;
-      border-radius: 4px;
-      background: linear-gradient(to right, #2563EB 0%, #2563EB 0%, #555 0%, #555 100%);
     }
     #time-display { color: white; font-size: 0.875rem; min-width: 90px; }
     #video-cta-button {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
+      top: 1rem; right: 1rem;
       z-index: 4;
       display: none;
-      padding: 0.75rem 1.5rem;
-      background-color: #2563EB;
-      color: white;
-      font-weight: 600;
-      border-radius: 9999px;
-      text-decoration: none;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      transition: all 0.2s ease-in-out;
     }
-    #video-cta-button:hover { background-color: #1D4ED8; transform: scale(1.05); }
     #video-end-screen {
       position: absolute;
       top: 0; left: 0;
@@ -98,27 +108,6 @@
       justify-content: center;
       align-items: center;
     }
-    #end-screen-cta-button {
-      padding: 1rem 2rem;
-      background-color: #2563EB;
-      color: white;
-      font-size: 1.125rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 9999px;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-    }
-    #end-screen-cta-button:hover { background-color: #1D4ED8; transform: scale(1.05); }
-    #replay-button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background: none; color: white; font-size: 1rem; font-weight: 500;
-      border: none; cursor: pointer; display: flex; align-items: center; opacity: 0.8;
-      transition: opacity 0.2s ease-in-out;
-    }
-    #replay-button:hover { opacity: 1; }
-    #replay-button svg { margin-right: 0.5rem; fill: white; width: 20px; height: 20px; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -135,22 +124,27 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="player-wrapper mt-8" id="playerWrapper">
-        <a href="#calendar-section" id="video-cta-button">Book a Call</a>
+        <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</a>
 
         <div class="video-player-container" id="myCustomPlayer">
-          <video class="video-visual" id="mainVideo" playsinline preload="auto"></video>
+          <video class="video-visual" id="mainVideo" playsinline muted loop autoplay preload="auto"></video>
+          
+          <div id="play-overlay">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+          </div>
+
           <div class="custom-controls" id="customControls">
-            <button id="playPauseBtn">
-              <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
-              <svg class="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+            <button id="playPauseBtn" class="p-2">
+              <svg class="play-icon" viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M8 5v14l11-7z"></path></svg>
+              <svg class="pause-icon" viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
             </button>
             <input type="range" id="progress-bar" value="0" step="0.1">
             <span id="time-display">00:00 / 00:00</span>
           </div>
           <div id="video-end-screen">
-            <button id="end-screen-cta-button">Book a Call</button>
-            <button id="replay-button">
-              <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
+            <button id="end-screen-cta-button" class="px-8 py-4 bg-blue-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</button>
+            <button id="replay-button" class="mt-4 px-4 py-2 text-white font-medium flex items-center opacity-80 hover:opacity-100 transition-opacity">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="white" class="mr-2"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
               Replay
             </button>
           </div>
@@ -180,6 +174,7 @@
     const playerWrapper   = document.getElementById('playerWrapper');
     const playerContainer = document.getElementById('myCustomPlayer');
     const mainVideo       = document.getElementById('mainVideo');
+    const playOverlay     = document.getElementById('play-overlay');
     const playPauseBtn    = document.getElementById('playPauseBtn');
     const progressBar     = document.getElementById('progress-bar');
     const timeDisplay     = document.getElementById('time-display');
@@ -190,6 +185,7 @@
     const replayButton    = document.getElementById('replay-button');
 
     mainVideo.src = "{{FINAL_VIDEO_URL}}";
+    let videoHasStarted = false;
 
     function formatTime(time) {
       if (isNaN(time)) return "00:00";
@@ -198,7 +194,22 @@
       return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
+    function startVideoPlayback() {
+        if (videoHasStarted) return;
+        videoHasStarted = true;
+        
+        playerWrapper.classList.add('video-active');
+        mainVideo.muted = false;
+        mainVideo.loop = false;
+        mainVideo.currentTime = 0;
+        mainVideo.play();
+    }
+    
+    playOverlay.addEventListener('click', startVideoPlayback);
+
     function togglePlayPause() {
+      // This function only works after the initial play
+      if (!videoHasStarted) return;
       if (mainVideo.paused) {
         mainVideo.play();
       } else {
@@ -211,15 +222,17 @@
     };
 
     playerContainer.addEventListener('click', (event) => {
-      if (event.target === playerContainer || event.target === mainVideo) {
+      if (videoHasStarted && (event.target === playerContainer || event.target === mainVideo)) {
         togglePlayPause();
       }
     });
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     mainVideo.addEventListener('play', () => {
-      playerWrapper.classList.add('playing');
-      videoCtaButton.style.display = 'block';
+        if (videoHasStarted) {
+            playerWrapper.classList.add('playing');
+            videoCtaButton.style.display = 'block';
+        }
     });
 
     mainVideo.addEventListener('pause', () => {
@@ -227,12 +240,14 @@
     });
 
     mainVideo.addEventListener('timeupdate', () => {
-      const currentTime = mainVideo.currentTime;
-      const duration = mainVideo.duration;
-      progressBar.value = currentTime;
-      const progressPercent = (currentTime / duration) * 100;
-      progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
-      timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+      if (videoHasStarted) {
+        const currentTime = mainVideo.currentTime;
+        const duration = mainVideo.duration;
+        progressBar.value = currentTime;
+        const progressPercent = (currentTime / duration) * 100;
+        progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+      }
     });
 
     mainVideo.addEventListener('loadedmetadata', () => {
@@ -241,21 +256,21 @@
     });
     
     mainVideo.addEventListener('ended', () => {
-      playerWrapper.classList.remove('playing');
-      videoCtaButton.style.display = 'none';
-      videoEndScreen.style.display = 'flex';
-      // --- FEATURE: Scroll to calendar when video ends ---
-      scrollToCalendar();
+      if (videoHasStarted) {
+        playerWrapper.classList.remove('playing');
+        videoCtaButton.style.display = 'none';
+        videoEndScreen.style.display = 'flex';
+        scrollToCalendar();
+      }
     });
 
     progressBar.addEventListener('input', () => {
-      mainVideo.currentTime = progressBar.value;
+        if (videoHasStarted) mainVideo.currentTime = progressBar.value;
     });
 
     videoCtaButton.addEventListener('click', (event) => {
         event.preventDefault(); 
         event.stopPropagation();
-        // --- FEATURE: Pause video before scrolling ---
         mainVideo.pause();
         scrollToCalendar();
     });
@@ -270,13 +285,15 @@
 
     let controlsTimeout;
     playerWrapper.addEventListener('mousemove', () => {
-      playerWrapper.classList.add('controls-visible');
-      clearTimeout(controlsTimeout);
-      controlsTimeout = setTimeout(() => {
-        if (!mainVideo.paused) {
-            playerWrapper.classList.remove('controls-visible');
-        }
-      }, 3000);
+      if (videoHasStarted) {
+        playerWrapper.classList.add('controls-visible');
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+          if (!mainVideo.paused) {
+              playerWrapper.classList.remove('controls-visible');
+          }
+        }, 3000);
+      }
     });
 </script>
 </body>
