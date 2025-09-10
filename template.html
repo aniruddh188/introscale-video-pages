@@ -28,8 +28,28 @@
       border-radius: 0.75rem;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
-
-    /* This class will be removed by the script once playback starts */
+    
+    /* NEW: Styles for the custom buttons and overlay */
+    #video-cta-button {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      z-index: 10; /* Ensure it's above the player */
+      display: none;
+    }
+    #video-end-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 15; /* Ensure it's on top of everything */
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 0.75rem;
+    }
+    
+    /* Hide the control bar on initial load */
     .hide-controls .plyr__controls {
         opacity: 0;
         pointer-events: none;
@@ -56,10 +76,19 @@
     <div class="max-w-6xl mx-auto px-6 text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
-      <div class="mt-8 hide-controls" id="player-container">
+      <div class="mt-8 hide-controls relative" id="player-container">
         <video id="player" playsinline controls preload="auto">
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
+        
+        <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</a>
+        <div id="video-end-screen">
+            <button id="end-screen-cta-button" class="px-8 py-4 bg-blue-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</button>
+            <button id="replay-button" class="mt-4 px-4 py-2 text-white font-medium flex items-center opacity-80 hover:opacity-100 transition-opacity">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="white" class="mr-2"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
+              Replay
+            </button>
+        </div>
       </div>
     </div>
 
@@ -87,14 +116,15 @@
     const playerContainer = document.getElementById('player-container');
     const player = new Plyr('#player', {
         controls: [
-            'play-large',
-            'play',
-            'progress',
-            'current-time',
-            'mute',
-            'fullscreen'
+            'play-large', 'play', 'progress', 'current-time', 'mute', 'fullscreen'
         ]
     });
+
+    // Get references to the restored buttons
+    const videoCtaButton = document.getElementById('video-cta-button');
+    const videoEndScreen = document.getElementById('video-end-screen');
+    const endScreenCtaButton = document.getElementById('end-screen-cta-button');
+    const replayButton = document.getElementById('replay-button');
 
     let firstPlay = true;
 
@@ -104,23 +134,40 @@
 
     player.on('play', () => {
       if (firstPlay) {
-        // Remove the class to make the controls visible
         playerContainer.classList.remove('hide-controls');
+        videoCtaButton.style.display = 'block'; // Show the top-right button
         player.currentTime = 0;
         firstPlay = false;
       }
       gtag('event', 'video_play', {
-        'event_category': 'Video',
-        'event_label': '{{PROSPECT_NAME}}'
+        'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}'
       });
     });
 
     player.on('ended', () => {
-      gtag('event', 'video_ended', {
-        'event_category': 'Video',
-        'event_label': '{{PROSPECT_NAME}}'
-      });
+      videoCtaButton.style.display = 'none'; // Hide top-right button
+      videoEndScreen.style.display = 'flex'; // Show end screen
       document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
+      gtag('event', 'video_ended', {
+        'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}'
+      });
+    });
+
+    // Add event listeners for the end-screen buttons
+    const scrollToCalendar = () => document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
+    
+    videoCtaButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        player.pause();
+        scrollToCalendar();
+    });
+
+    endScreenCtaButton.addEventListener('click', scrollToCalendar);
+
+    replayButton.addEventListener('click', () => {
+        videoEndScreen.style.display = 'none';
+        player.play();
     });
 
     let lastTrackedTime = 0;
@@ -129,9 +176,7 @@
         if (currentTime > 0 && currentTime % 10 === 0 && currentTime !== lastTrackedTime) {
             lastTrackedTime = currentTime;
             gtag('event', 'video_progress', {
-                'event_category': 'Video',
-                'event_label': '{{PROSPECT_NAME}}',
-                'value': currentTime
+                'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}', 'value': currentTime
             });
         }
     });
@@ -143,8 +188,7 @@
             if (scrollPercent >= depth && !scrollDepthTracked[depth]) {
                 scrollDepthTracked[depth] = true;
                 gtag('event', 'scroll_depth', {
-                    'event_category': 'Page Interaction',
-                    'event_label': `${depth}%`
+                    'event_category': 'Page Interaction', 'event_label': `${depth}%`
                 });
             }
         });
