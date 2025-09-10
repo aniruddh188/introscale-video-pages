@@ -29,8 +29,14 @@
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    /* This ensures the big play button is always visible when paused */
-    .plyr--paused .plyr__control--overlaid {
+    /* Hide the control bar on initial load (when the player is "stopped") */
+    .plyr--stopped .plyr__controls {
+        opacity: 0;
+    }
+
+    /* Ensure the big play button is visible when the video is paused or stopped */
+    .plyr--paused .plyr__control--overlaid,
+    .plyr--stopped .plyr__control--overlaid {
         display: flex !important;
         opacity: 1 !important;
     }
@@ -78,30 +84,25 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
 <script>
-    // **NEW: Custom controls configuration**
     const player = new Plyr('#player', {
-        // Defines exactly which buttons to show and in what order
         controls: [
-            'play-large', // The big play button in the center
-            'play',       // The small play button in the control bar
-            'progress',   // The progress bar
-            'current-time',// The current time display
-            'mute',       // The mute button
-            'fullscreen'  // The fullscreen button
+            'play-large',
+            'play',
+            'progress',
+            'current-time',
+            'mute',
+            'fullscreen'
         ]
     });
 
     let firstPlay = true;
 
-    // Set the thumbnail to the 1-second mark
     player.on('loadedmetadata', (event) => {
         player.currentTime = 1;
     });
 
-    // When the user clicks play for the first time...
     player.on('play', () => {
       if (firstPlay) {
-        // ...jump back to the beginning to start the video.
         player.currentTime = 0;
         firstPlay = false;
       }
