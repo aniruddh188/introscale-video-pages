@@ -29,12 +29,7 @@
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    /* Hide controls and show only the big play button when paused */
-    .plyr:not(.plyr--playing) .plyr__controls {
-        opacity: 0;
-        pointer-events: none;
-    }
-
+    /* This ensures the big play button is always visible when paused */
     .plyr--paused .plyr__control--overlaid {
         display: flex !important;
         opacity: 1 !important;
@@ -83,9 +78,17 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
 <script>
+    // **NEW: Custom controls configuration**
     const player = new Plyr('#player', {
-        // Hide all controls by default except the large play button
-        controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+        // Defines exactly which buttons to show and in what order
+        controls: [
+            'play-large', // The big play button in the center
+            'play',       // The small play button in the control bar
+            'progress',   // The progress bar
+            'current-time',// The current time display
+            'mute',       // The mute button
+            'fullscreen'  // The fullscreen button
+        ]
     });
 
     let firstPlay = true;
