@@ -44,7 +44,7 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="mt-8">
-        <video id="player" playsinline controls muted loop>
+        <video id="player" playsinline controls preload="auto">
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
       </div>
@@ -72,23 +72,16 @@
 
 <script>
     const player = new Plyr('#player');
-    let firstPlay = true;
 
-    // This event only fires for videos that load successfully.
-    player.on('ready', (event) => {
-      // Start the muted, looping preview. Broken videos will never reach this.
-      player.play();
+    // **NEW: Logic to set the thumbnail frame**
+    // This event fires when the video's metadata (like duration) is loaded.
+    player.on('loadedmetadata', (event) => {
+        // Set the video's current time to 2 seconds. This becomes the thumbnail.
+        player.currentTime = 2;
     });
-    
-    // This handles the user's first click to play the video with sound
-    player.on('play', () => {
-      if (firstPlay && player.muted) {
-        player.muted = false;
-        player.loop = false;
-        player.currentTime = 0;
-        firstPlay = false;
-      }
 
+    // Add Google Analytics event tracking
+    player.on('play', () => {
       gtag('event', 'video_play', {
         'event_category': 'Video',
         'event_label': '{{PROSPECT_NAME}}'
