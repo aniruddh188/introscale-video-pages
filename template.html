@@ -28,6 +28,18 @@
       border-radius: 0.75rem;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
+
+    /* Hide controls and show only the big play button when paused */
+    .plyr:not(.plyr--playing) .plyr__controls {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .plyr--paused .plyr__control--overlaid {
+        display: flex !important;
+        opacity: 1 !important;
+    }
+
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -71,17 +83,25 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
 <script>
-    const player = new Plyr('#player');
-
-    // **NEW: Logic to set the thumbnail frame**
-    // This event fires when the video's metadata (like duration) is loaded.
-    player.on('loadedmetadata', (event) => {
-        // Set the video's current time to 2 seconds. This becomes the thumbnail.
-        player.currentTime = 2;
+    const player = new Plyr('#player', {
+        // Hide all controls by default except the large play button
+        controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
     });
 
-    // Add Google Analytics event tracking
+    let firstPlay = true;
+
+    // Set the thumbnail to the 1-second mark
+    player.on('loadedmetadata', (event) => {
+        player.currentTime = 1;
+    });
+
+    // When the user clicks play for the first time...
     player.on('play', () => {
+      if (firstPlay) {
+        // ...jump back to the beginning to start the video.
+        player.currentTime = 0;
+        firstPlay = false;
+      }
       gtag('event', 'video_play', {
         'event_category': 'Video',
         'event_label': '{{PROSPECT_NAME}}'
@@ -96,7 +116,6 @@
       document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
     });
 
-    // Track 10-second intervals
     let lastTrackedTime = 0;
     player.on('timeupdate', () => {
         const currentTime = Math.round(player.currentTime);
@@ -110,7 +129,6 @@
         }
     });
 
-    // Scroll tracking
     let scrollDepthTracked = {};
     window.addEventListener('scroll', () => {
         const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
