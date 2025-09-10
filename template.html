@@ -143,6 +143,13 @@
     const belowVideoCta = document.getElementById('below-video-cta');
 
     let firstPlay = true;
+    
+    player.on('loadedmetadata', (event) => {
+        if (player.duration) {
+            // Set the current time to near the end to show the final frame as a thumbnail
+            player.currentTime = player.duration - 0.01;
+        }
+    });
 
     player.on('play', () => {
       videoCtaButton.style.display = 'block';
