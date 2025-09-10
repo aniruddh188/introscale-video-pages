@@ -103,7 +103,19 @@
           <h2 id="calendar-section" class="text-3xl md:text-4xl font-bold text-white mt-12">Ready to Grow? Book Your Free Strategy Call</h2>
           <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md h-[700px]">
             <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-growthcall"></div>
-          </div>
+            <script type="text/javascript">
+              (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+            Cal("init", "growthcall", {origin:"https://app.cal.com"});
+
+              Cal.ns.growthcall("inline", {
+                elementOrSelector:"#my-cal-inline-growthcall",
+                config: {"layout":"month_view","theme":"light"},
+                calLink: "introscale/growthcall",
+              });
+
+              Cal.ns.growthcall("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#1E88E5"}},"hideEventTypeDetails":false,"layout":"month_view"});
+              </script>
+              </div>
       </div>
     </div>
   </main>
@@ -113,7 +125,6 @@
   </footer>
 
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-<script type="text/javascript" src="https://app.cal.com/embed/embed.js"></script>
 
 <script>
     const playerContainer = document.getElementById('player-container');
@@ -127,12 +138,10 @@
     function positionBlueSection() {
         if (!playerContainer) return;
         const playerHeight = playerContainer.offsetHeight;
-        // Calculate the overlap needed for the cut to be at 75% of the video height
-        const overlap = playerHeight * 0.25; // The 25% of the video that will be on the blue background
+        // Calculate the overlap needed for the cut to be at 60% of the video height
+        const overlap = playerHeight * 0.40; // The 40% of the video that will be on the blue background
         
-        // Pull the entire blue section up by the overlap amount
         blueSectionWrapper.style.marginTop = `-${overlap}px`;
-        // Add padding to the top of the blue section to push its content back down
         blueSectionWrapper.style.paddingTop = `${overlap}px`;
     }
 
@@ -193,11 +202,6 @@
         videoEndScreen.style.display = 'none';
         player.play();
     });
-    
-    (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-    Cal("init", "growthcall", {origin:"https://app.cal.com"});
-    Cal.ns.growthcall("inline", { elementOrSelector:"#my-cal-inline-growthcall", config: {"layout":"month_view","theme":"light"}, calLink: "introscale/growthcall" });
-    Cal.ns.growthcall("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#1E88E5"}},"hideEventTypeDetails":false,"layout":"month_view"});
 
     let lastTrackedTime = 0;
     player.on('timeupdate', () => {
