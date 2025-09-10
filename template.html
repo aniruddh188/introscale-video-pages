@@ -45,7 +45,7 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="mt-8">
-        <video id="player" playsinline controls>
+        <video id="player" playsinline controls autoplay muted loop>
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
       </div>
@@ -72,11 +72,18 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
 <script>
-    // Initialize the Plyr player
     const player = new Plyr('#player');
+    let firstPlay = true;
 
-    // Add Google Analytics event tracking
     player.on('play', () => {
+      // This code runs only the first time the user clicks play
+      if (firstPlay && player.muted) {
+        player.muted = false; // Unmute
+        player.loop = false;  // Turn off loop
+        player.currentTime = 0; // Restart from beginning
+        firstPlay = false;
+      }
+
       gtag('event', 'video_play', {
         'event_category': 'Video',
         'event_label': '{{PROSPECT_NAME}}'
@@ -88,7 +95,6 @@
         'event_category': 'Video',
         'event_label': '{{PROSPECT_NAME}}'
       });
-      // Scroll to the calendar when the video finishes
       document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
     });
 
