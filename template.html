@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>A Video for {{PROSPECT_NAME}} | Introscale</title>
   <link rel="icon" type="image/png" href="favicon.png">
+  
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,92 +23,11 @@
   <style>
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; }
-    .player-wrapper { position: relative; }
-    .video-player-container {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      cursor: pointer;
-      overflow: hidden;
+    
+    /* Custom styles to make Plyr fit our design */
+    .plyr {
       border-radius: 0.75rem;
-      background-color: #000;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    .video-visual {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
-    #play-overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: rgba(0,0,0,0.4); /* Shadowish layer */
-      cursor: pointer;
-      transition: opacity 0.3s ease;
-    }
-    #play-overlay svg {
-      width: 100px; /* Bigger play button */
-      height: 100px;
-      fill: white;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-      transition: transform 0.2s ease;
-    }
-    #play-overlay:hover svg {
-      transform: scale(1.1);
-    }
-    .player-wrapper.video-active #play-overlay {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .custom-controls {
-      position: absolute;
-      bottom: 0; left: 0;
-      width: 100%;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      padding: 0.625rem;
-      box-sizing: border-box;
-      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
-    }
-    .player-wrapper.controls-visible .custom-controls { opacity: 1; }
-    #playPauseBtn .pause-icon { display: none; }
-    .playing #playPauseBtn .play-icon { display: none; }
-    .playing #playPauseBtn .pause-icon { display: block; }
-    #progress-bar {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 8px;
-      flex-grow: 1;
-      margin: 0 0.9375rem;
-      cursor: pointer;
-    }
-    #time-display { color: white; font-size: 0.875rem; min-width: 90px; }
-    #video-cta-button {
-      position: absolute;
-      top: 1rem; right: 1rem;
-      z-index: 4;
-      display: none;
-    }
-    #video-end-screen {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 7;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
     }
   </style>
 </head>
@@ -122,32 +44,10 @@
     <div class="max-w-6xl mx-auto px-6 text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
-      <div class="player-wrapper mt-8" id="playerWrapper">
-        <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</a>
-
-        <div class="video-player-container" id="myCustomPlayer">
-          <video class="video-visual" id="mainVideo" playsinline muted loop autoplay preload="auto"></video>
-          
-          <div id="play-overlay">
-            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
-          </div>
-
-          <div class="custom-controls" id="customControls">
-            <button id="playPauseBtn" class="p-2">
-              <svg class="play-icon" viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M8 5v14l11-7z"></path></svg>
-              <svg class="pause-icon" viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
-            </button>
-            <input type="range" id="progress-bar" value="0" step="0.1">
-            <span id="time-display">00:00 / 00:00</span>
-          </div>
-          <div id="video-end-screen">
-            <button id="end-screen-cta-button" class="px-8 py-4 bg-blue-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</button>
-            <button id="replay-button" class="mt-4 px-4 py-2 text-white font-medium flex items-center opacity-80 hover:opacity-100 transition-opacity">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="white" class="mr-2"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
-              Replay
-            </button>
-          </div>
-        </div>
+      <div class="mt-8">
+        <video id="player" playsinline controls autoplay muted loop>
+            <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
+        </video>
       </div>
     </div>
 
@@ -169,174 +69,48 @@
     <p>&copy; 2025 Introscale. All rights reserved.</p>
   </footer>
 
+<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
 <script>
-    const playerWrapper    = document.getElementById('playerWrapper');
-    const playerContainer = document.getElementById('myCustomPlayer');
-    const mainVideo        = document.getElementById('mainVideo');
-    const playOverlay      = document.getElementById('play-overlay');
-    const playPauseBtn     = document.getElementById('playPauseBtn');
-    const progressBar      = document.getElementById('progress-bar');
-    const timeDisplay      = document.getElementById('time-display');
-    const videoCtaButton   = document.getElementById('video-cta-button');
-    const calendarSection = document.getElementById('calendar-section');
-    const videoEndScreen   = document.getElementById('video-end-screen');
-    const endScreenCtaButton = document.getElementById('end-screen-cta-button');
-    const replayButton     = document.getElementById('replay-button');
+    const player = new Plyr('#player');
+    let firstPlay = true;
 
-    mainVideo.src = "{{FINAL_VIDEO_URL}}";
-    let videoHasStarted = false;
-    let controlsTimeout;
-    
-    // *** NEW: Error handling logic ***
-    mainVideo.addEventListener('error', function(e) {
-        console.error("Video Error:", e);
-        // Hide custom controls and show default browser controls
-        playOverlay.style.display = 'none';
-        document.getElementById('customControls').style.display = 'none';
-        mainVideo.controls = true;
-        mainVideo.muted = false;
-        mainVideo.loop = false;
-        mainVideo.autoplay = false;
-        // The browser will now show its default player for the broken video
+    // This logic handles the transition from the muted loop to the main video
+    player.on('play', () => {
+      if (firstPlay && player.muted) {
+        player.muted = false; // Unmute the video
+        player.loop = false;  // Turn off the loop
+        player.currentTime = 0; // Restart from the beginning
+        firstPlay = false; // Ensure this only runs once
+      }
+
+      // Track GA event
+      gtag('event', 'video_play', {
+        'event_category': 'Video',
+        'event_label': '{{PROSPECT_NAME}}'
+      });
     });
 
-
-    function formatTime(time) {
-      if (isNaN(time)) return "00:00";
-      const minutes = Math.floor(time / 60);
-      const seconds = Math.floor(time % 60);
-      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }
-
-    function startVideoPlayback() {
-        if (videoHasStarted) return;
-        videoHasStarted = true;
-        
-        playerWrapper.classList.add('video-active');
-        mainVideo.muted = false;
-        mainVideo.loop = false;
-        mainVideo.currentTime = 0;
-        mainVideo.play();
-
-        playerWrapper.classList.add('playing');
-        videoCtaButton.style.display = 'block';
-        playerWrapper.classList.add('controls-visible');
-
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(() => {
-            if (!mainVideo.paused) {
-                playerWrapper.classList.remove('controls-visible');
-            }
-        }, 3000);
-    }
-    
-    playOverlay.addEventListener('click', startVideoPlayback);
-
-    function togglePlayPause() {
-      if (!videoHasStarted) {
-        startVideoPlayback();
-      } else {
-        if (mainVideo.paused) {
-          mainVideo.play();
-        } else {
-          mainVideo.pause();
-        }
-      }
-    }
-
-    const scrollToCalendar = () => {
-      calendarSection.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    playerContainer.addEventListener('click', (event) => {
-      if (videoHasStarted && (event.target === playerContainer || event.target === mainVideo)) {
-        togglePlayPause();
-      }
+    player.on('ended', () => {
+      gtag('event', 'video_ended', {
+        'event_category': 'Video',
+        'event_label': '{{PROSPECT_NAME}}'
+      });
+      document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
     });
-    playPauseBtn.addEventListener('click', togglePlayPause);
 
-    mainVideo.addEventListener('play', () => {
-        if (videoHasStarted) {
-            playerWrapper.classList.add('playing');
-            gtag('event', 'video_play', {
-              'event_category': 'Video',
-              'event_label': '{{PROSPECT_NAME}}'
+    // Track 10-second intervals
+    let lastTrackedTime = 0;
+    player.on('timeupdate', () => {
+        const currentTime = Math.round(player.currentTime);
+        if (currentTime > 0 && currentTime % 10 === 0 && currentTime !== lastTrackedTime) {
+            lastTrackedTime = currentTime;
+            gtag('event', 'video_progress', {
+                'event_category': 'Video',
+                'event_label': '{{PROSPECT_NAME}}',
+                'value': currentTime
             });
         }
-    });
-
-    mainVideo.addEventListener('pause', () => {
-      playerWrapper.classList.remove('playing');
-    });
-
-    mainVideo.addEventListener('timeupdate', () => {
-      if (videoHasStarted) {
-        const currentTime = mainVideo.currentTime;
-        const duration = mainVideo.duration;
-        progressBar.value = currentTime;
-        const progressPercent = (currentTime / duration) * 100;
-        progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
-        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-      }
-    });
-
-    mainVideo.addEventListener('loadedmetadata', () => {
-      progressBar.max = mainVideo.duration;
-      timeDisplay.textContent = `00:00 / ${formatTime(mainVideo.duration)}`;
-    });
-    
-    mainVideo.addEventListener('ended', () => {
-      if (videoHasStarted) {
-        playerWrapper.classList.remove('playing');
-        videoCtaButton.style.display = 'none';
-        videoEndScreen.style.display = 'flex';
-        scrollToCalendar();
-        gtag('event', 'video_ended', {
-          'event_category': 'Video',
-          'event_label': '{{PROSPECT_NAME}}'
-        });
-      }
-    });
-
-    progressBar.addEventListener('input', () => {
-        if (videoHasStarted) mainVideo.currentTime = progressBar.value;
-    });
-
-    videoCtaButton.addEventListener('click', (event) => {
-        event.preventDefault(); 
-        event.stopPropagation();
-        mainVideo.pause();
-        scrollToCalendar();
-        gtag('event', 'book_call_click', {
-          'event_category': 'CTA',
-          'event_label': 'In-Video Button'
-        });
-    });
-    
-    endScreenCtaButton.addEventListener('click',() => {
-        scrollToCalendar();
-        gtag('event', 'book_call_click', {
-          'event_category': 'CTA',
-          'event_label': 'End-Screen Button'
-        });
-    });
-
-    replayButton.addEventListener('click', () => {
-      videoEndScreen.style.display = 'none';
-      mainVideo.currentTime = 0;
-      mainVideo.play();
-    });
-
-    playerWrapper.addEventListener('mousemove', () => {
-      if (videoHasStarted) {
-        playerWrapper.classList.add('controls-visible');
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(() => {
-          if (!mainVideo.paused) {
-              playerWrapper.classList.remove('controls-visible');
-          }
-        }, 3000);
-      }
     });
 
     // Scroll tracking
