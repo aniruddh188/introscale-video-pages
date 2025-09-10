@@ -65,19 +65,12 @@
         }
     }
 
-    /* NEW STYLES FOR DIAGONAL BACKGROUND */
-    .diagonal-blue-background {
+    #blue-background {
       position: absolute;
-      top: 0;
       left: 0;
-      width: 100%;
-      height: 100%; /* Will be adjusted by JS based on video height */
-      background-color: #3B82F6; /* Tailwind blue-500 */
-      z-index: -1; /* Place it behind other content */
-      transform-origin: top left;
-      /* Adjust these values to control the diagonal angle */
-      clip-path: polygon(0 0, 100% 25%, 100% 100%, 0% 100%); 
-      /* For a sharper angle, reduce 25% (e.g., 10%). For shallower, increase. */
+      right: 0;
+      background-color: #3B82F6; /* Tailwind's blue-500 */
+      z-index: 1; /* Sits just behind the main content */
     }
 
   </style>
@@ -91,29 +84,30 @@
     </div>
   </header>
 
-  <main class="relative py-12 overflow-hidden">
-    <div class="diagonal-blue-background"></div>
+  <main class="relative">
+    <div id="blue-background"></div>
+    <div class="relative z-10 py-12">
+      <div class="max-w-6xl mx-auto px-6 text-center">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
-    <div class="max-w-6xl mx-auto px-6 text-center relative z-10"> <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
-
-      <div class="mt-8 hide-controls relative" id="player-container">
-        <video id="player" playsinline controls preload="auto">
-            <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
-        </video>
-        
-        <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-red-600 text-white font-semibold rounded-full shadow-md hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</a>
-        <div id="video-end-screen">
-            <button id="end-screen-cta-button" class="px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</button>
-            <button id="replay-button" class="mt-4 px-4 py-2 text-white font-medium flex items-center opacity-80 hover:opacity-100 transition-opacity">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="white" class="mr-2"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
-              Replay
-            </button>
+        <div class="mt-8 hide-controls relative" id="player-container">
+          <video id="player" playsinline controls preload="auto">
+              <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
+          </video>
+          
+          <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-red-600 text-white font-semibold rounded-full shadow-md hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</a>
+          <div id="video-end-screen">
+              <button id="end-screen-cta-button" class="px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</button>
+              <button id="replay-button" class="mt-4 px-4 py-2 text-white font-medium flex items-center opacity-80 hover:opacity-100 transition-opacity">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="white" class="mr-2"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
+                Replay
+              </button>
+          </div>
         </div>
       </div>
-      
-      <a href="#calendar-section" id="below-video-cta" class="inline-block px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105 mt-8 mb-8">Book a Call</a>
 
-      <div id="calendar-section" class="max-w-6xl mx-auto px-6 text-center">
+      <div id="calendar-section" class="max-w-6xl mx-auto px-6 text-center mt-16">
+        <a href="#calendar-section" id="below-video-cta" class="inline-block px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105 mb-8">Book a Call</a>
         <h2 class="text-3xl md:text-4xl font-bold text-white">Ready to Grow? Book Your Free Strategy Call</h2>
         <div class="mt-8 w-full bg-white p-2 rounded-xl shadow-md h-[700px]">
           <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline-growthcall"></div>
@@ -142,42 +136,35 @@
     const endScreenCtaButton = document.getElementById('end-screen-cta-button');
     const replayButton = document.getElementById('replay-button');
     const belowVideoCta = document.getElementById('below-video-cta');
-    const diagonalBackground = document.querySelector('.diagonal-blue-background');
-    const mainContent = document.querySelector('main');
+    const blueBg = document.getElementById('blue-background');
+    const mainSection = document.querySelector('main');
 
     let firstPlay = true;
 
-    // Function to adjust the diagonal background height
-    function adjustDiagonalBackground() {
-        // Get the bottom position of the player container relative to the main element
-        const playerBottom = playerContainer.offsetTop + playerContainer.offsetHeight;
-        // Get the total height of the main content area
-        const mainHeight = mainContent.offsetHeight;
-
-        // The diagonal background starts at the top of main, and we want its "cut" point
-        // to be roughly around the video player's bottom or slightly below
-        // This makes the blue section begin where the video section visually ends.
-        // We'll make it extend to the full height of the main section for now.
-        diagonalBackground.style.height = `${mainHeight - playerContainer.offsetTop}px`;
-        diagonalBackground.style.top = `${playerContainer.offsetTop}px`; // Start from the video's top
-
-        // If you want the blue background to start exactly at the diagonal line's lowest point,
-        // you might need more complex calculations or a fixed height for the blue section
-        // relative to the main content's overall height.
-        // For now, this should create the overall effect.
+    function positionBlueBackground() {
+        const rect = playerContainer.getBoundingClientRect();
+        const mainRect = mainSection.getBoundingClientRect();
+        
+        // Calculate the starting point: 60% down from the top of the video player
+        const startY = (rect.top - mainRect.top) + (rect.height * 0.6);
+        
+        blueBg.style.top = `${startY}px`;
+        blueBg.style.height = `${mainRect.height - startY}px`;
     }
 
-    // Call adjustment on load and resize
-    window.addEventListener('load', adjustDiagonalBackground);
-    window.addEventListener('resize', adjustDiagonalBackground);
-
+    player.on('ready', () => {
+        positionBlueBackground();
+    });
 
     player.on('loadedmetadata', (event) => {
         if (player.duration) {
             player.currentTime = player.duration;
         }
-        adjustDiagonalBackground(); // Also adjust once video metadata is loaded
+        positionBlueBackground();
     });
+    
+    window.addEventListener('resize', positionBlueBackground);
+
 
     player.on('play', () => {
       videoCtaButton.style.display = 'block';
@@ -233,7 +220,6 @@
         player.play();
     });
     
-    // Initialize Cal.com
     (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
     Cal("init", "growthcall", {origin:"https://app.cal.com"});
     Cal.ns.growthcall("inline", { elementOrSelector:"#my-cal-inline-growthcall", config: {"layout":"month_view","theme":"light"}, calLink: "introscale/growthcall" });
