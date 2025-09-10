@@ -126,7 +126,7 @@
         <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</a>
 
         <div class="video-player-container" id="myCustomPlayer">
-          <video class="video-visual" id="mainVideo" playsinline muted loop autoplay preload="auto"></video>
+          <video class="video-visual" id="mainVideo" playsinline preload="metadata"></video>
           
           <div id="play-overlay">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
@@ -194,49 +194,25 @@
       return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    function startVideoPlayback() {
-        if (videoHasStarted) return;
-        videoHasStarted = true;
-        
-        playerWrapper.classList.add('video-active');
-        mainVideo.muted = false;
-        mainVideo.loop = false;
-        mainVideo.currentTime = 0;
-        mainVideo.play();
-
-        // --- FIX: Logic moved from 'play' event listener to here ---
-        playerWrapper.classList.add('playing');
-        videoCtaButton.style.display = 'block';
-        playerWrapper.classList.add('controls-visible');
-
-        // Start timer to hide controls
-        clearTimeout(controlsTimeout);
-        controlsTimeout = setTimeout(() => {
-            if (!mainVideo.paused) {
-                playerWrapper.classList.remove('controls-visible');
-            }
-        }, 3000);
+    function togglePlayPause() {
+        if (mainVideo.paused) {
+            mainVideo.play();
+        } else {
+            mainVideo.pause();
+        }
     }
     
-    playOverlay.addEventListener('click', startVideoPlayback);
-
-    function togglePlayPause() {
-      if (!videoHasStarted) {
-        startVideoPlayback();
-      } else {
-        if (mainVideo.paused) {
-          mainVideo.play();
-        } else {
-          mainVideo.pause();
+    playOverlay.addEventListener('click', () => {
+        if (!videoHasStarted) {
+            videoHasStarted = true;
+            playerWrapper.classList.add('video-active');
+            videoCtaButton.style.display = 'block';
         }
-      }
-    }
-
-    const scrollToCalendar = () => {
-      calendarSection.scrollIntoView({ behavior: 'smooth' });
-    };
+        togglePlayPause();
+    });
 
     playerContainer.addEventListener('click', (event) => {
+      // Allow toggling play/pause by clicking the video, but only after it has started
       if (videoHasStarted && (event.target === playerContainer || event.target === mainVideo)) {
         togglePlayPause();
       }
@@ -244,13 +220,20 @@
     playPauseBtn.addEventListener('click', togglePlayPause);
 
     mainVideo.addEventListener('play', () => {
-        if (videoHasStarted) {
-            playerWrapper.classList.add('playing');
-            gtag('event', 'video_play', {
-              'event_category': 'Video',
-              'event_label': '{{PROSPECT_NAME}}'
-            });
-        }
+        playerWrapper.classList.add('playing');
+        playerWrapper.classList.add('controls-visible');
+        gtag('event', 'video_play', {
+          'event_category': 'Video',
+          'event_label': '{{PROSPECT_NAME}}'
+        });
+
+        // Hide controls after a delay
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+            if (!mainVideo.paused) {
+                playerWrapper.classList.remove('controls-visible');
+            }
+        }, 3000);
     });
 
     mainVideo.addEventListener('pause', () => {
@@ -258,23 +241,14 @@
     });
 
     mainVideo.addEventListener('timeupdate', () => {
-      if (videoHasStarted) {
         const currentTime = mainVideo.currentTime;
         const duration = mainVideo.duration;
-        progressBar.value = currentTime;
-        const progressPercent = (currentTime / duration) * 100;
-        progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
-        timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-
-        // Track video progress
-        if (Math.round(currentTime) % 10 === 0) { // Every 10 seconds
-            gtag('event', 'video_progress', {
-                'event_category': 'Video',
-                'event_label': '{{PROSPECT_NAME}}',
-                'value': Math.round(currentTime)
-            });
+        if (!isNaN(duration)) {
+            progressBar.value = currentTime;
+            const progressPercent = (currentTime / duration) * 100;
+            progressBar.style.background = `linear-gradient(to right, #2563EB ${progressPercent}%, #555 ${progressPercent}%, #555 100%)`;
+            timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
         }
-      }
     });
 
     mainVideo.addEventListener('loadedmetadata', () => {
@@ -283,21 +257,23 @@
     });
     
     mainVideo.addEventListener('ended', () => {
-      if (videoHasStarted) {
-        playerWrapper.classList.remove('playing');
-        videoCtaButton.style.display = 'none';
-        videoEndScreen.style.display = 'flex';
-        scrollToCalendar();
-        gtag('event', 'video_ended', {
-          'event_category': 'Video',
-          'event_label': '{{PROSPECT_NAME}}'
-        });
-      }
+      playerWrapper.classList.remove('playing');
+      videoCtaButton.style.display = 'none';
+      videoEndScreen.style.display = 'flex';
+      scrollToCalendar();
+      gtag('event', 'video_ended', {
+        'event_category': 'Video',
+        'event_label': '{{PROSPECT_NAME}}'
+      });
     });
 
     progressBar.addEventListener('input', () => {
-        if (videoHasStarted) mainVideo.currentTime = progressBar.value;
+        mainVideo.currentTime = progressBar.value;
     });
+    
+    const scrollToCalendar = () => {
+      calendarSection.scrollIntoView({ behavior: 'smooth' });
+    };
 
     videoCtaButton.addEventListener('click', (event) => {
         event.preventDefault(); 
@@ -336,20 +312,6 @@
       }
     });
 
-    // Scroll tracking
-    let scrollDepthTracked = {};
-    window.addEventListener('scroll', () => {
-        const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
-        [25, 50, 75, 90].forEach(depth => {
-            if (scrollPercent >= depth && !scrollDepthTracked[depth]) {
-                scrollDepthTracked[depth] = true;
-                gtag('event', 'scroll_depth', {
-                    'event_category': 'Page Interaction',
-                    'event_label': `${depth}%`
-                });
-            }
-        });
-    });
 </script>
 </body>
 </html>
