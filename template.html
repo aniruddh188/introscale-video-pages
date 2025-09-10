@@ -44,7 +44,7 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="mt-8">
-        <video id="player" playsinline controls>
+        <video id="player" playsinline controls muted loop>
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
       </div>
@@ -71,11 +71,24 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
 <script>
-    // SIMPLIFIED: Just initialize the player.
     const player = new Plyr('#player');
+    let firstPlay = true;
 
-    // Add Google Analytics event tracking
+    // This event only fires for videos that load successfully.
+    player.on('ready', (event) => {
+      // Start the muted, looping preview. Broken videos will never reach this.
+      player.play();
+    });
+    
+    // This handles the user's first click to play the video with sound
     player.on('play', () => {
+      if (firstPlay && player.muted) {
+        player.muted = false;
+        player.loop = false;
+        player.currentTime = 0;
+        firstPlay = false;
+      }
+
       gtag('event', 'video_play', {
         'event_category': 'Video',
         'event_label': '{{PROSPECT_NAME}}'
@@ -104,7 +117,7 @@
         }
     });
 
-    // Scroll tracking is independent of the player and can stay
+    // Scroll tracking
     let scrollDepthTracked = {};
     window.addEventListener('scroll', () => {
         const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
