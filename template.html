@@ -29,18 +29,17 @@
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
     
-    /* NEW: Styles for the custom buttons and overlay */
     #video-cta-button {
       position: absolute;
       top: 1rem; right: 1rem;
-      z-index: 10; /* Ensure it's above the player */
+      z-index: 10;
       display: none;
     }
     #video-end-screen {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 15; /* Ensure it's on top of everything */
+      z-index: 15;
       background-color: rgba(0, 0, 0, 0.5);
       display: none;
       flex-direction: column;
@@ -49,13 +48,11 @@
       border-radius: 0.75rem;
     }
     
-    /* Hide the control bar on initial load */
     .hide-controls .plyr__controls {
         opacity: 0;
         pointer-events: none;
     }
     
-    /* Ensure the big play button is visible when paused */
     .plyr--paused .plyr__control--overlaid {
         display: flex !important;
         opacity: 1 !important;
@@ -81,15 +78,18 @@
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
         
-        <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</a>
+        <a href="#calendar-section" id="video-cta-button" class="px-6 py-3 bg-red-600 text-white font-semibold rounded-full shadow-md hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</a>
         <div id="video-end-screen">
-            <button id="end-screen-cta-button" class="px-8 py-4 bg-blue-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105">Book a Call</button>
+            <button id="end-screen-cta-button" class="px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</button>
             <button id="replay-button" class="mt-4 px-4 py-2 text-white font-medium flex items-center opacity-80 hover:opacity-100 transition-opacity">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="white" class="mr-2"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"></path></svg>
               Replay
             </button>
         </div>
       </div>
+      
+      <a href="#calendar-section" class="mt-8 inline-block px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</a>
+
     </div>
 
     <div id="calendar-section" class="max-w-6xl mx-auto px-6 text-center mt-16">
@@ -120,7 +120,6 @@
         ]
     });
 
-    // Get references to the restored buttons
     const videoCtaButton = document.getElementById('video-cta-button');
     const videoEndScreen = document.getElementById('video-end-screen');
     const endScreenCtaButton = document.getElementById('end-screen-cta-button');
@@ -153,17 +152,37 @@
       });
     });
 
-    // Add event listeners for the end-screen buttons
     const scrollToCalendar = () => document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
     
+    // Event listener for the top-right video CTA button
     videoCtaButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
+        event.preventDefault(); // Prevent default link behavior
+        event.stopPropagation(); // Stop event from propagating to the player (which would pause it)
         player.pause();
         scrollToCalendar();
+        gtag('event', 'book_call_click', {
+          'event_category': 'CTA',
+          'event_label': 'In-Video Button'
+        });
     });
 
-    endScreenCtaButton.addEventListener('click', scrollToCalendar);
+    // Event listener for the end-screen CTA button
+    endScreenCtaButton.addEventListener('click', () => {
+        scrollToCalendar();
+        gtag('event', 'book_call_click', {
+          'event_category': 'CTA',
+          'event_label': 'End-Screen Button'
+        });
+    });
+
+    // Event listener for the new button below the video
+    document.querySelector('main .mt-8.inline-block').addEventListener('click', () => {
+        gtag('event', 'book_call_click', {
+          'event_category': 'CTA',
+          'event_label': 'Below Video Button'
+        });
+    });
+
 
     replayButton.addEventListener('click', () => {
         videoEndScreen.style.display = 'none';
