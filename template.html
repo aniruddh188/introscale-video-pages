@@ -24,7 +24,6 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; }
     
-    /* Custom styles to make Plyr fit our design */
     .plyr {
       border-radius: 0.75rem;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
@@ -45,7 +44,7 @@
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
       <div class="mt-8">
-        <video id="player" playsinline controls autoplay muted loop>
+        <video id="player" playsinline controls muted loop>
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
       </div>
@@ -75,16 +74,21 @@
     const player = new Plyr('#player');
     let firstPlay = true;
 
-    // This logic handles the transition from the muted loop to the main video
+    // This event only fires when Plyr has successfully loaded the video
+    player.on('ready', (event) => {
+      // Start the muted, looping preview
+      player.play();
+    });
+    
+    // This handles the user's first click to play the video with sound
     player.on('play', () => {
       if (firstPlay && player.muted) {
-        player.muted = false; // Unmute the video
-        player.loop = false;  // Turn off the loop
-        player.currentTime = 0; // Restart from the beginning
-        firstPlay = false; // Ensure this only runs once
+        player.muted = false;
+        player.loop = false;
+        player.currentTime = 0;
+        firstPlay = false;
       }
 
-      // Track GA event
       gtag('event', 'video_play', {
         'event_category': 'Video',
         'event_label': '{{PROSPECT_NAME}}'
