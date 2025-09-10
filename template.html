@@ -29,14 +29,14 @@
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    /* Hide the control bar on initial load (when the player is "stopped") */
-    .plyr--stopped .plyr__controls {
+    /* This class will be removed by the script once playback starts */
+    .hide-controls .plyr__controls {
         opacity: 0;
+        pointer-events: none;
     }
-
-    /* Ensure the big play button is visible when the video is paused or stopped */
-    .plyr--paused .plyr__control--overlaid,
-    .plyr--stopped .plyr__control--overlaid {
+    
+    /* Ensure the big play button is visible when paused */
+    .plyr--paused .plyr__control--overlaid {
         display: flex !important;
         opacity: 1 !important;
     }
@@ -56,7 +56,7 @@
     <div class="max-w-6xl mx-auto px-6 text-center">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">A Custom Strategy for {{PROSPECT_NAME}}</h1>
 
-      <div class="mt-8">
+      <div class="mt-8 hide-controls" id="player-container">
         <video id="player" playsinline controls preload="auto">
             <source src="{{FINAL_VIDEO_URL}}" type="video/mp4" />
         </video>
@@ -84,6 +84,7 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 
 <script>
+    const playerContainer = document.getElementById('player-container');
     const player = new Plyr('#player', {
         controls: [
             'play-large',
@@ -103,6 +104,8 @@
 
     player.on('play', () => {
       if (firstPlay) {
+        // Remove the class to make the controls visible
+        playerContainer.classList.remove('hide-controls');
         player.currentTime = 0;
         firstPlay = false;
       }
