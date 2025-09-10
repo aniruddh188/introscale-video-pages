@@ -58,6 +58,14 @@
         opacity: 1 !important;
     }
 
+    /* NEW: Media query for mobile devices */
+    @media (max-width: 768px) {
+        #video-cta-button {
+            padding: 0.5rem 1rem; /* Smaller padding */
+            font-size: 0.875rem;  /* Smaller font size */
+        }
+    }
+
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -88,7 +96,7 @@
         </div>
       </div>
       
-      <a href="#calendar-section" class="mt-8 inline-block px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</a>
+      <a href="#calendar-section" id="below-video-cta" class="mt-8 inline-block px-8 py-4 bg-red-600 text-white text-lg font-bold rounded-full shadow-lg hover:bg-red-700 transition-transform transform hover:scale-105">Book a Call</a>
 
     </div>
 
@@ -124,17 +132,20 @@
     const videoEndScreen = document.getElementById('video-end-screen');
     const endScreenCtaButton = document.getElementById('end-screen-cta-button');
     const replayButton = document.getElementById('replay-button');
+    const belowVideoCta = document.getElementById('below-video-cta');
 
     let firstPlay = true;
 
     player.on('loadedmetadata', (event) => {
-        player.currentTime = 1;
+        if (player.duration) {
+            player.currentTime = player.duration;
+        }
     });
 
     player.on('play', () => {
       if (firstPlay) {
         playerContainer.classList.remove('hide-controls');
-        videoCtaButton.style.display = 'block'; // Show the top-right button
+        videoCtaButton.style.display = 'block';
         player.currentTime = 0;
         firstPlay = false;
       }
@@ -144,9 +155,9 @@
     });
 
     player.on('ended', () => {
-      videoCtaButton.style.display = 'none'; // Hide top-right button
-      videoEndScreen.style.display = 'flex'; // Show end screen
-      document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
+      videoCtaButton.style.display = 'none';
+      videoEndScreen.style.display = 'flex';
+      scrollToCalendar();
       gtag('event', 'video_ended', {
         'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}'
       });
@@ -154,35 +165,28 @@
 
     const scrollToCalendar = () => document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
     
-    // Event listener for the top-right video CTA button
     videoCtaButton.addEventListener('click', (event) => {
-        event.preventDefault(); // Prevent default link behavior
-        event.stopPropagation(); // Stop event from propagating to the player (which would pause it)
+        event.preventDefault();
+        event.stopPropagation();
         player.pause();
         scrollToCalendar();
         gtag('event', 'book_call_click', {
-          'event_category': 'CTA',
-          'event_label': 'In-Video Button'
+          'event_category': 'CTA', 'event_label': 'In-Video Button'
         });
     });
 
-    // Event listener for the end-screen CTA button
     endScreenCtaButton.addEventListener('click', () => {
         scrollToCalendar();
         gtag('event', 'book_call_click', {
-          'event_category': 'CTA',
-          'event_label': 'End-Screen Button'
+          'event_category': 'CTA', 'event_label': 'End-Screen Button'
         });
     });
 
-    // Event listener for the new button below the video
-    document.querySelector('main .mt-8.inline-block').addEventListener('click', () => {
+    belowVideoCta.addEventListener('click', () => {
         gtag('event', 'book_call_click', {
-          'event_category': 'CTA',
-          'event_label': 'Below Video Button'
+          'event_category': 'CTA', 'event_label': 'Below Video Button'
         });
     });
-
 
     replayButton.addEventListener('click', () => {
         videoEndScreen.style.display = 'none';
