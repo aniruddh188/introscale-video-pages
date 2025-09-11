@@ -128,9 +128,10 @@
 
 <script>
     const playerContainer = document.getElementById('player-container');
+    // --- KEY CHANGE IS HERE ---
     const player = new Plyr('#player', {
         controls: [
-            'play-large', 'play', 'progress', 'current-time', 'mute', 'fullscreen'
+            'play-large', 'play', 'progress', 'current-time', 'mute' // 'fullscreen' has been removed
         ]
     });
     const blueSectionWrapper = document.getElementById('blue-section-wrapper');
@@ -163,31 +164,8 @@
     player.on('ended', () => {
       videoCtaButton.style.display = 'none';
       videoEndScreen.style.display = 'flex';
-      
-      if (player.fullscreen.active) {
-        player.fullscreen.exit();
-      } else {
-        scrollToCalendar();
-      }
+      scrollToCalendar();
       gtag('event', 'video_ended', { 'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}' });
-    });
-
-    // --- KEY CHANGES FOR FULLSCREEN BUTTON ---
-
-    player.on('enterfullscreen', () => {
-        // When entering fullscreen, move the button to the main body
-        document.body.appendChild(videoCtaButton);
-        // And change its positioning to be fixed to the screen
-        videoCtaButton.style.position = 'fixed';
-        videoCtaButton.style.zIndex = '9999';
-    });
-
-    player.on('exitfullscreen', () => {
-        // When exiting fullscreen, move the button back to its original container
-        playerContainer.appendChild(videoCtaButton);
-        // And restore its original positioning
-        videoCtaButton.style.position = 'absolute';
-        scrollToCalendar();
     });
 
     const scrollToCalendar = () => document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
