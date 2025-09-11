@@ -65,8 +65,11 @@
         }
     }
 
-    #player-container:fullscreen #video-cta-button {
-        display: block;
+    /* --- Key Change for Fullscreen Button --- */
+    .plyr--fullscreen-active #video-cta-button {
+        display: block !important;
+        position: fixed; /* Use fixed positioning in fullscreen */
+        z-index: 9999;  /* Ensure it's on top of the video player */
     }
   </style>
 </head>
@@ -170,16 +173,6 @@
       videoEndScreen.style.display = 'flex';
       scrollToCalendar();
       gtag('event', 'video_ended', { 'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}' });
-    });
-
-    player.on('enterfullscreen', () => {
-        videoCtaButton.style.display = 'block';
-    });
-
-    player.on('exitfullscreen', () => {
-        if (!player.playing) {
-            videoCtaButton.style.display = 'none';
-        }
     });
 
     const scrollToCalendar = () => document.getElementById('calendar-section').scrollIntoView({ behavior: 'smooth' });
