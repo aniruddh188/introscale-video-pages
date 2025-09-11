@@ -146,7 +146,6 @@
     
     player.on('loadedmetadata', (event) => {
         if (player.duration) {
-            // Set the current time to near the end to show the final frame as a thumbnail
             player.currentTime = player.duration - 0.01;
         }
     });
@@ -161,24 +160,33 @@
       gtag('event', 'video_play', { 'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}' });
     });
 
-    // --- KEY CHANGE IS HERE ---
     player.on('ended', () => {
       videoCtaButton.style.display = 'none';
       videoEndScreen.style.display = 'flex';
       
-      // If the video is in fullscreen when it ends...
       if (player.fullscreen.active) {
-        // ...exit fullscreen. The 'exitfullscreen' event below will handle scrolling.
         player.fullscreen.exit();
       } else {
-        // Otherwise, just scroll to the calendar immediately.
         scrollToCalendar();
       }
       gtag('event', 'video_ended', { 'event_category': 'Video', 'event_label': '{{PROSPECT_NAME}}' });
     });
 
-    // When the player exits fullscreen, scroll to the calendar.
+    // --- KEY CHANGES FOR FULLSCREEN BUTTON ---
+
+    player.on('enterfullscreen', () => {
+        // When entering fullscreen, move the button to the main body
+        document.body.appendChild(videoCtaButton);
+        // And change its positioning to be fixed to the screen
+        videoCtaButton.style.position = 'fixed';
+        videoCtaButton.style.zIndex = '9999';
+    });
+
     player.on('exitfullscreen', () => {
+        // When exiting fullscreen, move the button back to its original container
+        playerContainer.appendChild(videoCtaButton);
+        // And restore its original positioning
+        videoCtaButton.style.position = 'absolute';
         scrollToCalendar();
     });
 
